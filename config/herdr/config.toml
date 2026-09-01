@@ -1,0 +1,15 @@
+onboarding = false
+[ui.sound]
+enabled = false
+
+[ui.toast]
+delivery = "herdr"
+
+[ui]
+mouse_capture = true
+show_agent_labels_on_pane_borders = true
+
+agent_panel_sort = "priority"
+[theme]
+name = "gruvbox"
+auto_switch = false

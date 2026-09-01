@@ -1,0 +1,26 @@
+# dotfiles — default-deny: nothing is tracked unless allowlisted below.
+# New files dropped under config/ stay invisible to git until deliberately
+# allowlisted here.
+*
+!.gitignore
+!README.md
+!setup.sh
+!scripts/
+!scripts/sync-back.sh
+!config/
+!config/cheat/
+!config/cheat/herdr.md
+!config/cheat/pi.md
+!config/cheat/ws.md
+!config/fish/
+!config/fish/conf.d/
+!config/fish/conf.d/pi.fish.template
+!config/fish/conf.d/ws.fish
+!config/fish/conf.d/fish_frozen_theme.fish
+!config/git/
+!config/git/ignore
+!config/herdr/
+!config/herdr/config.toml
+!config/mise/
+!config/mise/config.toml
+!config/starship.toml

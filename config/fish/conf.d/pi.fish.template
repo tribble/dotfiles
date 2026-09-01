@@ -1,0 +1,6 @@
+# Cloudflare AI Gateway env for pi.
+# TEMPLATE — copy to pi.fish in this directory and fill in YOUR OWN ids:
+#   cp pi.fish.template pi.fish
+# pi.fish itself is never versioned (default-deny .gitignore does not allowlist it).
+set -gx CLOUDFLARE_ACCOUNT_ID your-account-id-here
+set -gx CLOUDFLARE_GATEWAY_ID your-gateway-id-here

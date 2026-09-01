@@ -1,0 +1,6 @@
+[tools]
+node = "24"
+[settings]
+trusted_config_paths = [
+    "~/conductor/workspaces"
+]
