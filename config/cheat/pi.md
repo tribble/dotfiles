@@ -60,7 +60,7 @@ settings.json:
 - AGENTS.md has Fitch's `baseline` working-agreement block (managed markers)
 
 models.json (Fitch's 320k/64k/40k policy — compact at ~256k with ~60k runway):
-- `contextWindow: 320000` on claude-fable-5, claude-opus-5, claude-sonnet-5,
+- `contextWindow: 320000` on claude-fable-5(-1), claude-opus-5, claude-sonnet-5,
   gpt-5.6-sol, kimi-k3, glm-5p2, deepseek-v4-pro, minimax-m3
 - qwen3p7-max LEFT at 262144 (real window < 320k — overriding up would move the failure)
 - why: workos.com/blog/coding-agent-context-window-compaction-settings
