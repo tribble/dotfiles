@@ -89,6 +89,8 @@ flag — if its flags consistently miss your taste, disable it:
 
 ## Manage
 
+- After `pi update`, if Cloudflare-routed Anthropic models read an expired local credential:
+  `~/work/pawprint/scripts/patch-pi-anthropic-gateway` (idempotent manual repair)
 - `pi config` — enable/disable any extension, skill, prompt, theme (Tab = project-local)
 - `pi remove <source>` — uninstall a package
 - MCP auth: `/mcp-auth <server>` per service. Exception: `github` uses your gh CLI token
