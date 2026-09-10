@@ -16,6 +16,7 @@ pi-verbosity-control and macuse). Drift check anytime: `/fitch-setup verify`.
 | `/copy-message` / `/copy-user` | copy raw session text without terminal formatting |
 | `/todos` | view the persistent todo list (survives compaction) |
 | `/cwd` | show/change working dir safely mid-session (worktrees, monorepos) |
+| `/done` | finished for good: archive transcript to `~/.pi/agent/sessions-archive/` (gone from `/resume`, still greppable) and quit. Ctrl+D = leave resumable |
 | `/mcp` / `/mcp-auth` | MCP gateway: list/search connected services, authenticate one |
 | `/ponytail-review` | run ponytail's audit on demand (see "Ponytail watch" below) |
 | `/fitch-setup` / `… verify` | kit installer / read-only drift report |

@@ -52,6 +52,9 @@
 
 | Thing | Does |
 |---|---|
+| `/ws [purpose]` | new focused workspace **here** (same cwd, no worktree); session model names it from purpose or recent context — never the repo |
+| `/delegate <name> <task>` | spawn named pane agent here + hand it the task; reports back via intercom |
+| `/fleet` | live agent roster |
 | `/parallel scout "x" -> oracle "y"` | subagents in-session (pi-subagents) |
 | `subagent worktree:true` | bounded task in throwaway worktree, returns diff |
 | `bash: ws create …` | agents spawn sibling workstreams themselves |
