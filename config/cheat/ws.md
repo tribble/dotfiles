@@ -52,7 +52,7 @@
 
 | Thing | Does |
 |---|---|
-| `/ws [purpose]` | new focused workspace **here** (same cwd, no worktree); session model names it from purpose or recent context — never the repo |
+| `/ws [repo\|dir] <purpose>` | new focused workspace + pi; dir from `workos`/`infra` id (or a path), else inferred from purpose — ids live in `~/.pi/agent/configs/ws.json`, never scanned; name from purpose, never the repo |
 | `/delegate <name> <task>` | spawn named pane agent here + hand it the task; reports back via intercom |
 | `/fleet` | live agent roster |
 | `/parallel scout "x" -> oracle "y"` | subagents in-session (pi-subagents) |
