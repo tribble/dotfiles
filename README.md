@@ -10,10 +10,12 @@ nothing is tracked unless explicitly allowlisted there.
 git clone <repo-url> ~/work/dotfiles && ~/work/dotfiles/setup.sh
 ```
 
-`setup.sh` **copies** `repo/config/...` → `~/.config/...` (never symlinks —
-a tool writing through a symlink would write into the repo). Live files that
-differ are backed up to `<path>.bak-dotfiles-<ts>` first. Idempotent; safe to
-re-run. `setup.sh --dry-run` prints the plan without touching anything.
+`setup.sh` **copies** `repo/config/...` → `~/.config/...` and `repo/vscode/...`
+→ `~/Library/Application Support/Code/User/...` (where VS Code on macOS reads
+its user files; never symlinks — a tool writing through a symlink would write
+into the repo). Live files that differ are backed up to
+`<path>.bak-dotfiles-<ts>` first. Idempotent; safe to re-run.
+`setup.sh --dry-run` prints the plan without touching anything.
 
 Files marked `.template` are NOT auto-installed — they mix safe structure
 with secrets. Install manually and fill in your own values:
@@ -51,6 +53,9 @@ afterwards. Read the diff, then commit.
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
 | `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24) |
+| `~/Library/Application Support/Code/User/settings.json` | `vscode/settings.json` | VS Code user settings |
+| `~/Library/Application Support/Code/User/tasks.json` | `vscode/tasks.json` | user task `Send selection to PR agent` → `pr-note --here` (see `~/work/pi/pr-review/README.md`) |
+| `~/Library/Application Support/Code/User/keybindings.json` | `vscode/keybindings.json` | `ctrl+alt+n` runs that task on a selection |
 
 ## Deliberately excluded
 

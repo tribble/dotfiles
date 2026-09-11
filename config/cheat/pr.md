@@ -49,6 +49,15 @@ exactly that text).
 |---------|------|
 | `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. |
 
+## VS Code: selection → the agent that owns the PR
+
+| Key / command | Does |
+|---------------|------|
+| select code, `ctrl+alt+n`, type note, Enter | user task `Send selection to PR agent` → `pr-note --here --path ${file} --code ${selectedText} --body …`. Select on the RIGHT (new) side of a diff; the file must be saved (the selection is located on disk). Success is silent; a failure reveals the task terminal with the error. |
+| `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, pr, path, start, end, side}` without sending |
+| recipient order | `--to` → `$PR_REVIEW_COORDINATOR` → pr-watch `~/.local/state/pr-watch/track.json` (agent that opened the PR) → `~/.config/pr-review/config.json` → error |
+| files | dotfiles `vscode/{tasks,keybindings,settings}.json` → `~/Library/Application Support/Code/User/` via `~/work/dotfiles/setup.sh` |
+
 ## github auth: ssh → https rewrite (permanent)
 
 Ephemeral (teleport) SSH keys expire mid-session and break GitHub ops. Global

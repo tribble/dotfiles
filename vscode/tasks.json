@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Send selection to PR agent",
+      "type": "process",
+      "command": "${userHome}/.local/bin/pr-note",
+      "args": ["--here", "--path", "${file}", "--code", "${selectedText}", "--body", "${input:prNote}"],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "echo": false,
+        "focus": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [{ "id": "prNote", "type": "promptString", "description": "Note for the PR agent" }]
+}

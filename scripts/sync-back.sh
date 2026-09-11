@@ -17,18 +17,25 @@ paths=(
   config/starship.toml
   config/git/ignore
   config/mise/config.toml
+  vscode/settings.json
+  vscode/tasks.json
+  vscode/keybindings.json
   # NEVER: config/fish/conf.d/pi.fish (account/gateway IDs — edit the .template instead)
   # NEVER: config/fish/config.fish (live API key), config/mcp/mcp.json (internal hosts)
 )
 
+# repo path -> live path; same mapping as setup.sh.
+live() { case "$1" in vscode/*) echo "$HOME/Library/Application Support/Code/User/${1#vscode/}";; *) echo "$HOME/.$1";; esac; }
+
 for rel in "${paths[@]}"; do
-  src="$HOME/.$rel"
-  [ -f "$src" ] || { echo "skip (no live file): ~/.$rel"; continue; }
+  src=$(live "$rel")
+  label="${src/#$HOME/~}"
+  [ -f "$src" ] || { echo "skip (no live file): $label"; continue; }
   if cmp -s "$src" "$rel"; then
     echo "ok (same):        $rel"
   else
     cp "$src" "$rel"
-    echo "synced:           ~/.$rel -> $rel"
+    echo "synced:           $label -> $rel"
   fi
 done
 

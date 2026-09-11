@@ -1,0 +1,8 @@
+[
+  {
+    "key": "ctrl+alt+n",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Send selection to PR agent",
+    "when": "editorTextFocus && editorHasSelection"
+  }
+]

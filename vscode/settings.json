@@ -1,0 +1,18 @@
+{
+  "workbench.colorTheme": "Tokyo Night",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font Mono', 'Hack Nerd Font', Menlo, monospace",
+  "editor.fontSize": 14,
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "selection",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.renderSideBySide": true,
+  "git.blame.editorDecoration.enabled": true,
+  "git.openRepositoryInParentFolders": "always",
+  "typescript.tsserver.maxTsServerMemory": 8192,
+  "githubPullRequests.pullBranch": "always",
+  "githubPullRequests.defaultMergeMethod": "squash",
+  "githubPullRequests.fileListLayout": "tree",
+  "telemetry.telemetryLevel": "off",
+  "update.showReleaseNotes": false,
+  "workbench.startupEditor": "none"
+}

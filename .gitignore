@@ -25,3 +25,7 @@
 !config/mise/
 !config/mise/config.toml
 !config/starship.toml
+!vscode/
+!vscode/settings.json
+!vscode/tasks.json
+!vscode/keybindings.json
