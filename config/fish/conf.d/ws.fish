@@ -35,3 +35,7 @@ complete -c herdr -n "__fish_seen_subcommand_from workspace; and __fish_seen_sub
 function kimi -d "pi in kimi-experiment mode (kimi-k3 max + kimi subagents)"
     pi --preset kimi $argv
 end
+
+# PR review queue: other people's PRs are reviewed in the GitHub web UI.
+# (Own PRs: `pr-review-open <pr>` opens the diff in a herdr tab.)
+abbr -a prs 'gh search prs --review-requested=@me --state=open --web'

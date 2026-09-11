@@ -43,6 +43,7 @@ afterwards. Read the diff, then commit.
 |---|---|---|
 | `~/.config/cheat/herdr.md` | `config/cheat/herdr.md` | cheat sheet (`cheat herdr`) |
 | `~/.config/cheat/pi.md` | `config/cheat/pi.md` | cheat sheet (`cheat pi`) |
+| `~/.config/cheat/pr.md` | `config/cheat/pr.md` | cheat sheet (`cheat pr`); edited as `~/work/pi/pr-review/CHEATSHEET.md` (the live path is a symlink to it, `~/work/pi` is not a git repo) |
 | `~/.config/cheat/ws.md` | `config/cheat/ws.md` | cheat sheet (`cheat`, default topic) |
 | `~/.config/herdr/config.toml` | `config/herdr/config.toml` | herdr UI/toast/theme prefs |
 | `~/.config/fish/conf.d/ws.fish` | `config/fish/conf.d/ws.fish` | ws/herdr functions + live completions |
@@ -58,8 +59,6 @@ afterwards. Read the diff, then commit.
 | `~/.config/fish/conf.d/pi.fish` | Contains Cloudflare account/gateway IDs — versioned as `pi.fish.template` instead; copy + fill in your own |
 | `~/.config/fish/config.fish` | Contains a live `BASETEN_API_KEY`. Rotate the key, strip it to env, then reconsider. |
 | `~/.config/mcp/mcp.json` | Contains internal hostnames (workos[.]tools / workos[.]cloud) |
-| `~/.config/gh-dash/config.yml` | Canonical copy already versioned in `~/work/pi/pr-watch/gh-dash/config.yml` (verified identical to live); pr-watch launches bare `gh dash`, no `--config` |
-| `~/.config/cheat/pr.md` | Symlink into the pr-review repo — already version-controlled there |
 | `~/.config/fish/conf.d/git.fish`, `fish-ssh-agent.fish`, `~/.config/fish/functions/` | fisher/plugin-vendored; reinstall via fisher |
 | `~/.config/starship.toml.bak` | stale backup |
 | `~/.config/ghostty/` | already managed by pawprint |

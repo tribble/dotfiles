@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 paths=(
   config/cheat/herdr.md
   config/cheat/pi.md
+  config/cheat/pr.md
   config/cheat/ws.md
   config/herdr/config.toml
   config/fish/conf.d/ws.fish
