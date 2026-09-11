@@ -54,8 +54,8 @@ exactly that text).
 | Key / command | Does |
 |---------------|------|
 | select code, `ctrl+alt+n`, type note, Enter | user task `Send selection to PR agent` → `pr-note --here --path ${file} --code ${selectedText} --body …`. Select on the RIGHT (new) side of a diff; the file must be saved (the selection is located on disk). Success is silent; a failure reveals the task terminal with the error. |
-| `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, pr, path, start, end, side}` without sending |
-| recipient order | `--to` → `$PR_REVIEW_COORDINATOR` → pr-watch `~/.local/state/pr-watch/track.json` (agent that opened the PR) → `~/.config/pr-review/config.json` → error |
+| `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, resolvedBy, pr, path, start, end, side}` without sending (`resolvedBy` = which step below won) |
+| recipient order | `--to` → pr-watch `~/.local/state/pr-watch/track.json` (agent that opened the PR) → the one live intercom session whose `cwd` is the file's git checkout or inside it (`pr-note --list` shows cwds; `subagent-*` dropped when several; still several = error naming them) → `$PR_REVIEW_COORDINATOR` / `~/.config/pr-review/config.json` (overrides, if you want one) → `no agent is working in <root> … start one there (ws / /ws) or pass --to` |
 | files | dotfiles `vscode/{tasks,keybindings,settings}.json` → `~/Library/Application Support/Code/User/` via `~/work/dotfiles/setup.sh` |
 
 ## github auth: ssh → https rewrite (permanent)
