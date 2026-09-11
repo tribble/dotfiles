@@ -43,6 +43,12 @@ Same content as the in-viewer help float: press `?` inside any review buffer
 Keep in sync with `HELP_TEXT` in `nvim/pr-review.lua` (the float renders
 exactly that text).
 
+## pr-prep: workos PR → worktree with go-to-definition (VS Code)
+
+| Command | Does |
+|---------|------|
+| `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. |
+
 ## github auth: ssh → https rewrite (permanent)
 
 Ephemeral (teleport) SSH keys expire mid-session and break GitHub ops. Global
