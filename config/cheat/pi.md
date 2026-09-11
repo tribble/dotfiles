@@ -100,6 +100,10 @@ flag — if its flags consistently miss your taste, disable it:
 - MCP auth: `/mcp-auth <server>` per service. Exception: `github` uses your gh CLI token
   automatically (`auth: bearer` + `!gh auth token` in mcp.json) — no /mcp-auth needed.
   (GitHub's MCP server doesn't do OAuth dynamic client registration — bearer is the fix.)
+- macOS Keychain prompt storm on MCP calls? Two differently-signed `node` binaries. pi's
+  launcher is `#!/usr/bin/env node`, so a nix/flake node on PATH (direnv) gives pi a different
+  Keychain identity than the Apple-signed mise node that created the items → prompt per item.
+  Check: `lsof -p <pi pid> | grep bin/node`. Fix: one node source; direnv was removed 2026-09-10.
 
 ## Parked
 
