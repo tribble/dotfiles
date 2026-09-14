@@ -1,8 +1,10 @@
 # PR REVIEW — CHEAT SHEET
 
-For reading your OWN PRs in a herdr tab (`pr-review-open <pr>`): the diff,
-reviewer comments on it, and `\pc` notes to the agent that owns the PR. Other
-people's PRs get reviewed in the GitHub web UI (`prs` opens your queue).
+`pr-review` is the front door (queue, then the right surface per PR); `pr-checkout`
+makes the worktree; `pr-review-open <pr>` reads your OWN PRs in a herdr tab: the
+diff, reviewer comments on it, and `\pc` notes to the agent that owns the PR.
+Others' PRs: `pr-review` → `pr-review <n>` → review → `pr-checkout --clean <n>`.
+Own PR: `pr-review-open <pr>`, or `pr-review <n>` + `ctrl+alt+n` in VS Code.
 
 Same content as the in-viewer help float: press `?` inside any review buffer
 (diff panes or the changed-files panel), `<leader>?` (`\?`) anywhere, or
@@ -43,15 +45,22 @@ Same content as the in-viewer help float: press `?` inside any review buffer
 Keep in sync with `HELP_TEXT` in `nvim/pr-review.lua` (the float renders
 exactly that text).
 
-## pr-prep: workos PR → worktree with go-to-definition (VS Code)
+## pr-review: the queue, and the right surface for a PR
 
 | Command | Does |
 |---------|------|
-| `pr-prep` | the PRs awaiting your review, from pr-watch's cache (`~/.local/state/pr-watch/state.json`; no `gh` call): `  <number>  <repo>  <title>  (<age>[, draft])`, then `pr-prep --open <number>`. Human-readable stdout (not the usual JSON); `--json` = the raw `needs_review` array. No state → "is the daemon running? (pr-watch daemon)", exit 1. |
-| `pr-prep <TAB>` / `--open <TAB>` / `--clean <TAB>` | fish (`conf.d/pr.fish`): PR numbers with `<repo> <title>` from the same cache / `pr-<n>` worktrees of `~/work/workos` / flags with descriptions |
-| `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. A created worktree gets a `pr-prep.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). |
-| `pr-prep --clean [--dry-run] <pr>` | remove `pr-<n>` (~9 GB each) — only if registered + marked + still on that branch + no uncommitted tracked changes (untracked files go with it); `branch -D` only when pr-prep created the branch. No marker (pre-marker worktrees, hand-made ones) = refuses: `git -C ~/work/workos worktree remove --force <path>` yourself. |
-| `pr-prep --clean --merged [--dry-run]` | sweep every marked `pr-<n>` whose PR is MERGED/CLOSED (`gh`); OPEN → `skipped`, no marker → `unmarked`. One JSON summary with `freed_bytes`. |
+| `pr-review` | the PRs awaiting your review, from pr-watch's cache (`~/.local/state/pr-watch/state.json`; no `gh` call): `  <number>  <repo>  <title>  (<age>[, draft])  <url>` (Ctrl+click the URL in herdr), then `pr-review <number>`. Human-readable stdout; `--json` = the raw `needs_review` array. No state → "is the daemon running? (pr-watch daemon)", exit 1. |
+| `pr-review <pr>` (a number, `owner/repo#n`, or the URL) | the PR's repo is checked out (`~/.pi/agent/configs/ws.json` `repos`, origin normalised to `owner/repo`) → `pr-checkout <n> --repo <checkout>` (progress on stderr) then `code <worktree>/monorepo.code-workspace` (or the worktree); any other repo → `open <url>`. Not in the queue (own PR) → one `gh pr view` (per ws.json repo for a bare number); a bare number in several repos → error naming them. One JSON line: `{ok, pr, repo, surface: "vscode" or "web", worktree?}`; a pr-checkout failure propagates its error (infra has no rush.json → use `--web`). |
+| `pr-review --web <pr>` / `--dry-run <pr>` | the browser even with a checkout / print the decision + commands (stderr), run nothing |
+| `pr-review <TAB>` / `pr-checkout <TAB>` / `pr-checkout --clean <TAB>` | fish (`conf.d/pr.fish`): PR numbers with `<repo> <title>` from the same cache / same / `pr-<n>` worktrees of `~/work/workos`; flags with descriptions |
+
+## pr-checkout: workos PR → worktree with go-to-definition (VS Code)
+
+| Command | Does |
+|---------|------|
+| `pr-checkout [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`). JSON on stdout (`worktree` is what pr-review opens), rush output on stderr. A created worktree gets a `pr-checkout.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). No `<pr>` → usage, exit 2. |
+| `pr-checkout --clean [--dry-run] <pr>` | remove `pr-<n>` (~9 GB each) — only if registered + marked + still on that branch + no uncommitted tracked changes (untracked files go with it); `branch -D` only when pr-checkout created the branch. No marker (pre-marker worktrees, hand-made ones) = refuses: `git -C ~/work/workos worktree remove --force <path>` yourself. |
+| `pr-checkout --clean --merged [--dry-run]` | sweep every marked `pr-<n>` whose PR is MERGED/CLOSED (`gh`); OPEN → `skipped`, no marker → `unmarked`. One JSON summary with `freed_bytes`. |
 | VS Code trust prompt per worktree | Workspaces: Manage Workspace Trust → Add Folder → `~/work/workos-worktrees` (trust inherits) |
 
 ## VS Code: selection → the agent that owns the PR

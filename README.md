@@ -49,7 +49,7 @@ afterwards. Read the diff, then commit.
 | `~/.config/cheat/ws.md` | `config/cheat/ws.md` | cheat sheet (`cheat`, default topic) |
 | `~/.config/herdr/config.toml` | `config/herdr/config.toml` | herdr UI/toast/theme prefs |
 | `~/.config/fish/conf.d/ws.fish` | `config/fish/conf.d/ws.fish` | ws/herdr functions + live completions |
-| `~/.config/fish/conf.d/pr.fish` | `config/fish/conf.d/pr.fish` | `pr-prep` completion: PR numbers from pr-watch's cache, `pr-<n>` worktrees after `--clean`, flags (see `~/work/pi/pr-review/README.md`) |
+| `~/.config/fish/conf.d/pr.fish` | `config/fish/conf.d/pr.fish` | `pr-review` + `pr-checkout` completion: PR numbers from pr-watch's cache, `pr-<n>` worktrees after `--clean`, flags (see `~/work/pi/pr-review/README.md`) |
 | `~/.config/fish/conf.d/fish_frozen_theme.fish` | `config/fish/conf.d/fish_frozen_theme.fish` | hand-picked theme colors (written by `fish_config`) |
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
