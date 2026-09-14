@@ -47,15 +47,18 @@ exactly that text).
 
 | Command | Does |
 |---------|------|
-| `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. |
+| `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. A created worktree gets a `pr-prep.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). |
+| `pr-prep --clean [--dry-run] <pr>` | remove `pr-<n>` (~9 GB each) — only if registered + marked + still on that branch + no uncommitted tracked changes (untracked files go with it); `branch -D` only when pr-prep created the branch. No marker (pre-marker worktrees, hand-made ones) = refuses: `git -C ~/work/workos worktree remove --force <path>` yourself. |
+| `pr-prep --clean --merged [--dry-run]` | sweep every marked `pr-<n>` whose PR is MERGED/CLOSED (`gh`); OPEN → `skipped`, no marker → `unmarked`. One JSON summary with `freed_bytes`. |
+| VS Code trust prompt per worktree | Workspaces: Manage Workspace Trust → Add Folder → `~/work/workos-worktrees` (trust inherits) |
 
 ## VS Code: selection → the agent that owns the PR
 
 | Key / command | Does |
 |---------------|------|
 | select code, `ctrl+alt+n`, type note, Enter | user task `Send selection to PR agent` → `pr-note --here --path ${file} --code ${selectedText} --body …`. Select on the RIGHT (new) side of a diff; the file must be saved (the selection is located on disk). Success is silent; a failure reveals the task terminal with the error. |
-| `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, resolvedBy, pr, path, start, end, side}` without sending (`resolvedBy` = which step below won) |
-| recipient order | `--to` → pr-watch `~/.local/state/pr-watch/track.json` (agent that opened the PR) → the one live intercom session whose `cwd` is the file's git checkout or inside it (`pr-note --list` shows cwds; `subagent-*` dropped when several; still several = error naming them) → `$PR_REVIEW_COORDINATOR` / `~/.config/pr-review/config.json` (overrides, if you want one) → `no agent is working in <root> … start one there (ws / /ws) or pass --to` |
+| `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, toName, resolvedBy, pr, path, start, end, side}` without sending (`to` = the recipient's intercom session ID, `resolvedBy` = which step below won) |
+| recipient order | `--to` → pr-watch `~/.local/state/pr-watch/track.json` (`agent_id` of the agent that opened the PR) → the one live intercom session whose `cwd` is the file's git checkout or inside it (`pr-note --list` shows cwds; `subagent-*` dropped when several; still several = error naming them) → `$PR_REVIEW_COORDINATOR` / `~/.config/pr-review/config.json` (overrides, if you want one) → `no agent is working in <root> … start one there (ws / /ws) or pass --to`. Every step yields a session ID; a name given anywhere is resolved to the one live session with exactly that name (`pr-note --resolve <name>` shows it) |
 | files | dotfiles `vscode/{tasks,keybindings,settings}.json` → `~/Library/Application Support/Code/User/` via `~/work/dotfiles/setup.sh` |
 
 ## github auth: ssh → https rewrite (permanent)
