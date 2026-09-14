@@ -14,5 +14,8 @@
   "githubPullRequests.fileListLayout": "tree",
   "telemetry.telemetryLevel": "off",
   "update.showReleaseNotes": false,
-  "workbench.startupEditor": "none"
+  "workbench.startupEditor": "none",
+  "githubPullRequests.quickDiff": true,
+  "scm.diffDecorations": "all",
+  "scm.diffDecorationsGutterWidth": 3
 }
