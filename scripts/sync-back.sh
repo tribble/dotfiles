@@ -12,6 +12,7 @@ paths=(
   config/cheat/ws.md
   config/herdr/config.toml
   config/fish/conf.d/ws.fish
+  config/fish/conf.d/pr.fish
   config/fish/conf.d/fish_frozen_theme.fish
   config/fish/fish_plugins
   config/starship.toml

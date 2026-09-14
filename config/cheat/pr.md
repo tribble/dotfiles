@@ -47,6 +47,8 @@ exactly that text).
 
 | Command | Does |
 |---------|------|
+| `pr-prep` | the PRs awaiting your review, from pr-watch's cache (`~/.local/state/pr-watch/state.json`; no `gh` call): `  <number>  <repo>  <title>  (<age>[, draft])`, then `pr-prep --open <number>`. Human-readable stdout (not the usual JSON); `--json` = the raw `needs_review` array. No state → "is the daemon running? (pr-watch daemon)", exit 1. |
+| `pr-prep <TAB>` / `--open <TAB>` / `--clean <TAB>` | fish (`conf.d/pr.fish`): PR numbers with `<repo> <title>` from the same cache / `pr-<n>` worktrees of `~/work/workos` / flags with descriptions |
 | `pr-prep [--open] [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`) → `--open` = `code monorepo.code-workspace`. JSON on stdout, rush output on stderr. A created worktree gets a `pr-prep.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). |
 | `pr-prep --clean [--dry-run] <pr>` | remove `pr-<n>` (~9 GB each) — only if registered + marked + still on that branch + no uncommitted tracked changes (untracked files go with it); `branch -D` only when pr-prep created the branch. No marker (pre-marker worktrees, hand-made ones) = refuses: `git -C ~/work/workos worktree remove --force <path>` yourself. |
 | `pr-prep --clean --merged [--dry-run]` | sweep every marked `pr-<n>` whose PR is MERGED/CLOSED (`gh`); OPEN → `skipped`, no marker → `unmarked`. One JSON summary with `freed_bytes`. |

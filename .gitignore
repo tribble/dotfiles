@@ -16,6 +16,7 @@
 !config/fish/
 !config/fish/conf.d/
 !config/fish/conf.d/pi.fish.template
+!config/fish/conf.d/pr.fish
 !config/fish/conf.d/ws.fish
 !config/fish/conf.d/fish_frozen_theme.fish
 !config/git/
