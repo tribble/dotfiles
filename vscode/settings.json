@@ -1,7 +1,7 @@
 {
   "workbench.colorTheme": "Tokyo Night",
   "editor.fontFamily": "'JetBrainsMono Nerd Font Mono', 'Hack Nerd Font', Menlo, monospace",
-  "editor.fontSize": 14,
+  "editor.fontSize": 15,
   "editor.minimap.enabled": false,
   "editor.renderWhitespace": "selection",
   "diffEditor.ignoreTrimWhitespace": false,
@@ -17,5 +17,8 @@
   "workbench.startupEditor": "none",
   "githubPullRequests.quickDiff": true,
   "scm.diffDecorations": "all",
-  "scm.diffDecorationsGutterWidth": 3
+  "scm.diffDecorationsGutterWidth": 3,
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor"
+  }
 }
