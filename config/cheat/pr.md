@@ -74,17 +74,3 @@ exactly that text).
 | `pr-note --here --dry-run --path <file> --code <text> --body t` | print the resolved `{to, toName, resolvedBy, pr, path, start, end, side}` without sending (`to` = the recipient's intercom session ID, `resolvedBy` = which step below won) |
 | recipient order | `--to` → pr-watch `~/.local/state/pr-watch/track.json` (`agent_id` of the agent that opened the PR) → the one live intercom session whose `cwd` is the file's git checkout or inside it (`pr-note --list` shows cwds; `subagent-*` dropped when several; still several = error naming them) → `$PR_REVIEW_COORDINATOR` / `~/.config/pr-review/config.json` (overrides, if you want one) → `no agent is working in <root> … start one there (ws / /ws) or pass --to`. Every step yields a session ID; a name given anywhere is resolved to the one live session with exactly that name (`pr-note --resolve <name>` shows it) |
 | files | dotfiles `vscode/{tasks,keybindings,settings}.json` → `~/Library/Application Support/Code/User/` via `~/work/dotfiles/setup.sh` |
-
-## github auth: ssh → https rewrite (permanent)
-
-Ephemeral (teleport) SSH keys expire mid-session and break GitHub ops. Global
-gitconfig rewrites all GitHub SSH URLs to HTTPS (gh token path, keyring-backed):
-
-```
-url.https://github.com/.insteadOf = git@github.com:
-url.https://github.com/.insteadOf = ssh://git@github.com/
-url.git@github.com:workos/.insteadOf = git@github.com:workos/   # work org stays SSH (longest match wins)
-```
-
-test: `GIT_SSH_COMMAND=false git ls-remote git@github.com:tribble/pawprint.git`
-If everything breaks at once → `gh auth login` re-heals every repo.
