@@ -16,6 +16,9 @@ end
 # pr-review <TAB> → review queue
 complete -c pr-review -f -a '(__pr_review_prs)'
 complete -c pr-review -l web -d 'The browser even when a local checkout exists'
+complete -c pr-review -l nvim -d 'The diff in octo.nvim, in a new herdr tab (own PRs; any repo)'
+complete -c pr-review -l coordinator -x -d 'With --nvim: intercom session ID that \pc notes go to'
+complete -c pr-review -l no-focus -d 'With --nvim: open the tab in the background'
 complete -c pr-review -l dry-run -d 'Print the decision and the commands, run nothing'
 complete -c pr-review -l json -d 'No <pr>: print the raw needs_review array'
 complete -c pr-review -s h -l help -d 'Show help'

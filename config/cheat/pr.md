@@ -1,10 +1,12 @@
 # PR REVIEW — CHEAT SHEET
 
-`pr-review` is the front door (queue, then the right surface per PR); `pr-checkout`
-makes the worktree; `pr-review-open <pr>` reads your OWN PRs in a herdr tab: the
-diff, reviewer comments on it, and `\pc` notes to the agent that owns the PR.
+`pr-review` is the one front door with three surfaces: `pr-review <n>` = VS Code on
+a `pr-checkout` worktree (repo in ws.json) else the browser; `--web` = the browser;
+`--nvim` = your OWN PR in a herdr tab: the diff, reviewer comments on it, and `\pc`
+notes to the agent that owns the PR (any repo, no checkout).
 Others' PRs: `pr-review` → `pr-review <n>` → review → `pr-checkout --clean <n>`.
-Own PR: `pr-review-open <pr>`, or `pr-review <n>` + `ctrl+alt+n` in VS Code.
+Own PR: the agent's `open_pr_review` tool opens the tab; or `pr-review --nvim <pr>`;
+or `pr-review <n>` + `ctrl+alt+n` in VS Code.
 
 Same content as the in-viewer help float: press `?` inside any review buffer
 (diff panes or the changed-files panel), `<leader>?` (`\?`) anywhere, or
@@ -50,15 +52,16 @@ exactly that text).
 | Command | Does |
 |---------|------|
 | `pr-review` | the PRs awaiting your review, from pr-watch's cache (`~/.local/state/pr-watch/state.json`; no `gh` call): `  <number>  <repo>  <title>  (<age>[, draft])  <url>` (Ctrl+click the URL in herdr), then `pr-review <number>`. Human-readable stdout; `--json` = the raw `needs_review` array. No state → "is the daemon running? (pr-watch daemon)", exit 1. |
-| `pr-review <pr>` (a number, `owner/repo#n`, or the URL) | the PR's repo is checked out (`~/.pi/agent/configs/ws.json` `repos`, origin normalised to `owner/repo`) → `pr-checkout <n> --repo <checkout>` (progress on stderr) then `code <worktree>/monorepo.code-workspace` (or the worktree); any other repo → `open <url>`. Not in the queue (own PR) → one `gh pr view` (per ws.json repo for a bare number); a bare number in several repos → error naming them. One JSON line: `{ok, pr, repo, surface: "vscode" or "web", worktree?}`; a pr-checkout failure propagates its error (infra has no rush.json → use `--web`). |
+| `pr-review <pr>` (a number, `owner/repo#n`, or the URL) | the PR's repo is checked out (`~/.pi/agent/configs/ws.json` `repos`, origin normalised to `owner/repo`) → `pr-checkout <n> --repo <checkout>` (progress on stderr) then `code <worktree>/monorepo.code-workspace` (or the worktree — infra: no rush.json, so worktree only, no build); any other repo → `open <url>`. Not in the queue (own PR) → one `gh pr view` (per ws.json repo for a bare number); a bare number in several repos → error naming them. One JSON line: `{ok, pr, repo, surface: "vscode"/"web"/"nvim", worktree?, tab_id?, pane_id?}`; a pr-checkout failure propagates its error. |
 | `pr-review --web <pr>` / `--dry-run <pr>` | the browser even with a checkout / print the decision + commands (stderr), run nothing |
+| `pr-review --nvim [--coordinator <id>] [--no-focus] <pr>` | own PR, any repo: a new tab in this herdr workspace (label `PR #<n>`, env `PR_REVIEW_PR=owner/repo#n`) running `pr-review-nvim` → octo.nvim review layout. An explicit `owner/repo#n`/URL skips queue + ws.json (one `gh pr view`); a bare number resolves via the queue. Coordinator (the intercom session `\pc` notes go to, injected as `PR_REVIEW_COORDINATOR`): `--coordinator` (the `open_pr_review` tool passes its own ID) → `$PR_REVIEW_COORDINATOR` → `~/.config/pr-review/config.json` → `$PI_SESSION_NAME`; none → pr-note routes each note (track.json → agent in the checkout). Needs `HERDR_ENV=1`. `--dry-run` prints the two herdr commands. |
 | `pr-review <TAB>` / `pr-checkout <TAB>` / `pr-checkout --clean <TAB>` | fish (`conf.d/pr.fish`): PR numbers with `<repo> <title>` from the same cache / same / `pr-<n>` worktrees of `~/work/workos`; flags with descriptions |
 
-## pr-checkout: workos PR → worktree with go-to-definition (VS Code)
+## pr-checkout: PR → worktree (workos: with go-to-definition for VS Code)
 
 | Command | Does |
 |---------|------|
-| `pr-checkout [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`). JSON on stdout (`worktree` is what pr-review opens), rush output on stderr. A created worktree gets a `pr-checkout.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). No `<pr>` → usage, exit 2. |
+| `pr-checkout [--no-build] [--dry-run] <pr>` | reuse/create `~/work/workos-worktrees/pr-<n>` on the PR branch → `rush install` → `rush build --to-except <touched projects>` (deps only, so `@workos-inc/*` imports resolve to `src/*.ts`). JSON on stdout (`worktree` is what pr-review opens), rush output on stderr. A created worktree gets a `pr-checkout.json` marker in its git dir (`.git/worktrees/pr-<n>/`; a reused one never does). `--repo <checkout>` without rush.json (infra): the worktree only, one stderr line, `built: false`. No `<pr>` → usage, exit 2. |
 | `pr-checkout --clean [--dry-run] <pr>` | remove `pr-<n>` (~9 GB each) — only if registered + marked + still on that branch + no uncommitted tracked changes (untracked files go with it); `branch -D` only when pr-checkout created the branch. No marker (pre-marker worktrees, hand-made ones) = refuses: `git -C ~/work/workos worktree remove --force <path>` yourself. |
 | `pr-checkout --clean --merged [--dry-run]` | sweep every marked `pr-<n>` whose PR is MERGED/CLOSED (`gh`); OPEN → `skipped`, no marker → `unmarked`. One JSON summary with `freed_bytes`. |
 | VS Code trust prompt per worktree | Workspaces: Manage Workspace Trust → Add Folder → `~/work/workos-worktrees` (trust inherits) |

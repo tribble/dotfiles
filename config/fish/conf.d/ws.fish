@@ -37,5 +37,5 @@ function kimi -d "pi in kimi-experiment mode (kimi-k3 max + kimi subagents)"
 end
 
 # PR review queue: other people's PRs are reviewed in the GitHub web UI.
-# (Own PRs: `pr-review-open <pr>` opens the diff in a herdr tab.)
+# (Own PRs: `pr-review --nvim <pr>` opens the diff in a herdr tab.)
 abbr -a prs 'gh search prs --review-requested=@me --state=open --web'
