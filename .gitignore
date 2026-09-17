@@ -30,3 +30,5 @@
 !vscode/settings.json
 !vscode/tasks.json
 !vscode/keybindings.json
+!launchagents/
+!launchagents/com.tribble.pr-watch.plist

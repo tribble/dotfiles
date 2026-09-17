@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  pr-watch poller (~/work/pi/pr-watch) as a launchd LaunchAgent, so it survives
+  herdr/terminal/pi quits; a `pr-watch daemon` started from a herdr pane dies
+  with herdr. Installed to ~/Library/LaunchAgents and (re)loaded by setup.sh.
+
+  Paths are absolute on purpose: launchd expands neither ~ nor $HOME, and this
+  repo copies files verbatim (no templating). PATH is explicit because launchd
+  gives a job only /usr/bin:/bin:/usr/sbin:/sbin: pr-watch needs gh (homebrew),
+  jq (/usr/bin), node (mise; pr-steer and pr-note are node scripts found next
+  to pr-watch in ~/.local/bin) and herdr (homebrew, toasts). PR_WATCH_* env
+  knobs are deliberately unset (defaults).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tribble.pr-watch</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/pantera/.local/bin/pr-watch</string>
+    <string>run</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/pantera/.local/bin:/Users/pantera/.local/share/mise/installs/node/24/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/Users/pantera</string>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>/Users/pantera/.local/state/pr-watch/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/pantera/.local/state/pr-watch/launchd.log</string>
+</dict>
+</plist>

@@ -21,12 +21,13 @@ paths=(
   vscode/settings.json
   vscode/tasks.json
   vscode/keybindings.json
+  launchagents/com.tribble.pr-watch.plist
   # NEVER: config/fish/conf.d/pi.fish (account/gateway IDs — edit the .template instead)
   # NEVER: config/fish/config.fish (live API key), config/mcp/mcp.json (internal hosts)
 )
 
 # repo path -> live path; same mapping as setup.sh.
-live() { case "$1" in vscode/*) echo "$HOME/Library/Application Support/Code/User/${1#vscode/}";; *) echo "$HOME/.$1";; esac; }
+live() { case "$1" in vscode/*) echo "$HOME/Library/Application Support/Code/User/${1#vscode/}";; launchagents/*) echo "$HOME/Library/LaunchAgents/${1#launchagents/}";; *) echo "$HOME/.$1";; esac; }
 
 for rel in "${paths[@]}"; do
   src=$(live "$rel")
