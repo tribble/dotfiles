@@ -1,0 +1,29 @@
+id = "tribble.artifacts"
+name = "Artifacts"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "What each pi agent made — PRs, notebooks, tickets, reports, worktrees — as a sidebar row and an overlay list"
+platforms = ["macos", "linux"]
+
+# Sidebar token `$artifacts` for the pane whose agent just went idle/done/blocked.
+[[events]]
+on = "pane.agent_status_changed"
+command = ["node", "artifacts.mjs", "report"]
+
+# Re-report every pi pane after a herdr restart (tokens live in server memory).
+[[startup]]
+command = ["node", "artifacts.mjs", "report", "--all-panes"]
+
+# Full list for the focused pane; any key closes it.
+[[panes]]
+id = "list"
+title = "Artifacts"
+placement = "overlay"
+command = ["node", "artifacts.mjs", "show"]
+
+# Bindable: [[keys.command]] type = "plugin_action", command = "tribble.artifacts.show".
+[[actions]]
+id = "show"
+title = "Show artifacts"
+contexts = ["pane"]
+command = ["node", "artifacts.mjs", "open"]

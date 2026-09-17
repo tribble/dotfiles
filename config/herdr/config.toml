@@ -26,4 +26,11 @@ rows = [
     { contains = "idle", ignore_case = true, dim = true },
     { contains = "done", ignore_case = true, dim = true },
   ] }],
+  [{ token = "$artifacts", dim = true }],
 ]
+
+[[keys.command]]
+key = "prefix+a"
+type = "plugin_action"
+command = "tribble.artifacts.show"
+description = "artifacts of the focused agent"

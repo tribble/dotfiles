@@ -26,6 +26,11 @@
 !config/mise/
 !config/mise/config.toml
 !config/starship.toml
+!herdr-plugins/
+!herdr-plugins/artifacts/
+!herdr-plugins/artifacts/herdr-plugin.toml
+!herdr-plugins/artifacts/artifacts.mjs
+!herdr-plugins/artifacts/artifacts.test.mjs
 !vscode/
 !vscode/settings.json
 !vscode/tasks.json

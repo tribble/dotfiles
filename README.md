@@ -30,6 +30,13 @@ cp config/fish/conf.d/pi.fish.template ~/.config/fish/conf.d/pi.fish  # then edi
 The filled-in `pi.fish` is never versioned (the default-deny `.gitignore`
 does not allowlist it).
 
+herdr plugins under `herdr-plugins/` are not copied — herdr runs them from
+wherever they live, so link the checkout once (needs `node` ≥ 20 on herdr's PATH):
+
+```sh
+herdr plugin link ~/work/dotfiles/herdr-plugins/artifacts
+```
+
 ## Keeping a change (live → repo)
 
 Edits happen in the live files. When one is worth keeping, run:
@@ -61,6 +68,7 @@ afterwards. Read the diff, then commit.
 | `~/Library/Application Support/Code/User/tasks.json` | `vscode/tasks.json` | user task `Send selection to PR agent` → `pr-note --here` (see `~/work/pi/pr-review/README.md`) |
 | `~/Library/Application Support/Code/User/keybindings.json` | `vscode/keybindings.json` | `ctrl+alt+n` runs that task on a selection |
 | `~/Library/LaunchAgents/com.tribble.pr-watch.plist` | `launchagents/com.tribble.pr-watch.plist` | launchd job running `pr-watch run` (`KeepAlive`; survives herdr/terminal/pi quits); absolute paths + explicit `PATH` because launchd expands neither. Log: `~/.local/state/pr-watch/launchd.log` |
+| (linked, not copied) | `herdr-plugins/artifacts/` | herdr plugin `tribble.artifacts`: what each pi agent made (PRs, notebooks, tickets, reports, worktrees) as a `$artifacts` sidebar row and a `prefix+a` overlay list; `node artifacts.mjs <session.jsonl>` from a shell. Test: `node --test herdr-plugins/artifacts/artifacts.test.mjs` |
 
 ## Deliberately excluded
 
