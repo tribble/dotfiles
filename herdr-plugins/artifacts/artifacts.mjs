@@ -15,45 +15,40 @@ import { fileURLToPath } from "node:url";
 
 const HOME = homedir();
 const URL_RE = /https?:\/\/[^\s<>"'`)\]]+/g;
-// report-ish files the agent names to the user; code files are edits, not artifacts
-const FILE_RE = /(?:~|\/(?:tmp|Users|home|private))\/[^\s<>"'`()\]:,*]*\.(?:md|txt|html|png|svg|patch|diff|log|csv)\b/g; // no globs
+// .md paths the agent names to the user, bare or as a file:// link; the name must end at a delimiter, so `x.md.json`,
+// `x.md~` and `x.md/` are not the file `x.md`; no globs. isReport() then keeps report locations.
+const FILE_RE = /(?<![:/\w…])(?:file:\/\/)?~?\/[^\s<>"'`()\]:,*]*\.md(?=[\s.,;:!?)\]>*`'"”’|<#—–…]|$)(?!\.\w)/g;
+// a report lives under /tmp, a *-worktrees/ dir or the session cwd — never in config, state or a checkout's internals
+const NOT_REPORT = /^~\/(?:\.config|\.pi|\.local|Library)\/|\/(?:node_modules|\.git)\//;
+const isReport = (u, cwd) => !NOT_REPORT.test(u) && (/^\/tmp\/|-worktrees\//.test(u) || (cwd && u.startsWith(`${cwd}/`)));
 const WORKTREE_RE = /(?<![:/\w…])~?\/[^\s"'`()]+-worktrees\/[\w.-]+(?![<\w.-])/g; // no `…/x-worktrees/a`, no `pr-<N>`
 const PLACEHOLDER = /\$\{|\.\.\.|…|example\.com|<[a-z]+>/i;
 const TRAIL = /[*_.,;:!?]+$/; // sentence punctuation and markdown emphasis glued to a URL, in any order
 // GitHub pull|issues and Linear issues cut after the id, so `/files`, `#issuecomment-…` and slugs fold into one row
 const ID_URL = /^https?:\/\/(?:github\.com\/[^/]+\/[^/]+\/(?:pull|issues)\/\d+|linear\.app\/[^/]+\/issue\/[A-Za-z0-9]+-\d+)/;
-const NOISY_FILE = /\.(?:txt|log)$/; // run/reviewer logs sort after reports and images
 
-export const CREATED = ["PR", "issue", "notebook", "dashboard", "linear", "drop", "deploy", "file", "worktree"];
-const OTHER = ["CI run", "github", "datadog", "slack", "notion", "link"];
-const ORDER = [...CREATED, ...OTHER];
+export const KINDS = ["PR", "issue", "notebook", "dashboard", "linear", "drop", "deploy", "file", "worktree"];
 
-// Dedup key: trailing punctuation/markdown stripped, `#fragment` dropped, ids cut (ID_URL), `$HOME` → `~`.
+// Dedup key: trailing punctuation/markdown stripped, `#fragment` dropped, ids cut (ID_URL), `file://` and `$HOME` → `~`.
 export function normalize(raw) {
   let u = raw.replace(TRAIL, "");
   while (u.endsWith(")") && (u.match(/\(/g) ?? []).length < (u.match(/\)/g) ?? []).length) u = u.slice(0, -1).replace(TRAIL, "");
-  if (!/^https?:/.test(u)) return u.replace(/^\/private\/tmp\//, "/tmp/").replace(new RegExp(`^${HOME}(?=/|$)`), "~");
+  if (!/^https?:/.test(u)) return u.replace(/^file:\/\//, "").replace(/^\/private\/tmp\//, "/tmp/").replace(new RegExp(`^${HOME}(?=/|$)`), "~");
   const id = u.match(ID_URL);
   return id ? id[0] : u.replace(/#.*$/, "").replace(/\/$/, "");
 }
 
-export function kind(u) {
-  if (!/^https?:/.test(u)) return /-worktrees\/[\w.-]+$/.test(u) ? "worktree" : "file";
+// One of KINDS, or null: anything else the agent linked (docs, CI runs, repos, pricing pages) is not an artifact.
+export function kind(u, cwd = "") {
+  if (!/^https?:/.test(u)) return /-worktrees\/[\w.-]+$/.test(u) ? "worktree" : isReport(u, cwd) ? "file" : null;
   let host, p;
-  try { ({ host, pathname: p } = new URL(u)); } catch { return "link"; }
-  if (host === "github.com") {
-    if (/\/pull\/\d+/.test(p)) return "PR";
-    if (/\/issues\/\d+/.test(p)) return "issue";
-    if (/\/actions\/runs\//.test(p)) return "CI run";
-    return "github";
-  }
-  if (host.endsWith("datadoghq.com")) return p.startsWith("/notebook") ? "notebook" : p.startsWith("/dashboard") ? "dashboard" : "datadog";
+  try { ({ host, pathname: p } = new URL(u)); } catch { return null; }
+  if (host === "github.com") return /\/pull\/\d+/.test(p) ? "PR" : /\/issues\/\d+/.test(p) ? "issue" : null;
+  if (host.endsWith("datadoghq.com")) return p.startsWith("/notebook") ? "notebook" : p.startsWith("/dashboard") ? "dashboard" : null;
   if (host === "linear.app") return "linear";
-  if (host.endsWith("slack.com")) return "slack";
-  if (host.includes("notion")) return "notion";
   if (host.startsWith("drop.") || p.startsWith("/drops/")) return "drop"; // published report pages
   if (host.startsWith("deploy.")) return "deploy";
-  return "link";
+  return null;
 }
 
 function label(u, k) {
@@ -92,7 +87,8 @@ export function scan(file) {
   const add = (raw, line, when, by) => {
     const u = normalize(raw);
     if (PLACEHOLDER.test(u) || (/^https?:/.test(u) && u.length < 12)) return;
-    const k = kind(u);
+    const k = kind(u, normalize(cwd));
+    if (!k) return;
     const hit = found.get(u) ?? { key: u, kind: k, label: label(u, k), title: "", first: when, last: when, n: 0, by: new Set() };
     hit.n++;
     hit.last = when;
@@ -105,7 +101,9 @@ export function scan(file) {
     for (const line of text.split("\n")) {
       if (/^\s*```/.test(line)) { fenced = !fenced; continue; }
       if (fenced && by === "said") continue; // code blocks are examples, not artifacts
-      for (const re of [URL_RE, FILE_RE, WORKTREE_RE]) for (const m of line.matchAll(re)) add(m[0], line, when, by);
+      for (const m of line.matchAll(URL_RE)) add(m[0], line, when, by);
+      const bare = line.replace(/https?:\/\/\S+/g, " "); // a path inside a URL (`?path=/tmp/x.md`, `#/tmp/x.md`) is part of the URL
+      for (const re of [FILE_RE, WORKTREE_RE]) for (const m of bare.matchAll(re)) add(m[0], line, when, by);
     }
   };
   let name = "", cwd = "", entries = 0;
@@ -130,17 +128,14 @@ export function scan(file) {
   }
   const known = prWatchTitles();
   for (const [u, hit] of found) if (known.has(u)) hit.title = known.get(u);
-  const fileRank = (i) => (i.kind === "file" && NOISY_FILE.test(i.key) ? 1 : 0);
-  const items = [...found.values()].sort(
-    (a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind) || fileRank(a) - fileRank(b) || a.first.localeCompare(b.first),
-  );
+  const items = [...found.values()].sort((a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind) || a.first.localeCompare(b.first));
   return { file, name, cwd, entries, items };
 }
 
-// Sidebar token: created kinds only, ≤ 80 chars (herdr's cap), e.g. `⎘ 5 PR · 1 notebook · 6 files`.
+// Sidebar token, ≤ 80 chars (herdr's cap), e.g. `⎘ 5 PR · 1 notebook · 6 files`.
 export function token(items) {
   const counts = new Map();
-  for (const i of items) if (CREATED.includes(i.kind)) counts.set(i.kind, (counts.get(i.kind) ?? 0) + 1);
+  for (const i of items) counts.set(i.kind, (counts.get(i.kind) ?? 0) + 1);
   const parts = [...counts].map(([k, n]) => `${n} ${n === 1 || k === "PR" || k === "linear" ? k : k + "s"}`);
   if (!parts.length) return "";
   let text = `⎘ ${parts.join(" · ")}`;
@@ -155,12 +150,9 @@ export function render(s, { links = false, cols = 200 } = {}) {
   const out = [`${s.name || basename(s.file)}  (${s.cwd}, ${s.entries} entries, ${s.items.length} artifacts)`];
   const lw = Math.min(48, Math.max(0, ...s.items.map((i) => i.label.length)));
   const room = Math.max(20, cols - (lw + 40));
-  let other = false;
   for (const i of s.items) {
-    if (!other && OTHER.includes(i.kind)) { other = true; out.push(dim("— other links —")); }
     const lab = (links && /^https?:/.test(i.key) ? OSC8(i.key, i.label) : i.label) + " ".repeat(Math.max(0, lw - i.label.length));
-    const row = `${i.kind.padEnd(9)} ${lab} ${i.title.slice(0, room).padEnd(Math.min(room, 70))} ×${String(i.n).padStart(2)}  ${i.first.slice(5, 16).replace("T", " ")}`;
-    out.push(other ? dim(row) : row);
+    out.push(`${i.kind.padEnd(9)} ${lab} ${i.title.slice(0, room).padEnd(Math.min(room, 70))} ×${String(i.n).padStart(2)}  ${i.first.slice(5, 16).replace("T", " ")}`);
   }
   return out.join("\n");
 }
