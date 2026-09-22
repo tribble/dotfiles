@@ -3,12 +3,14 @@
 # COPIES repo files into place — never symlinks: a tool writing its config
 # through a symlink would write into the repo, and the leak vector returns.
 # Existing live files that differ are backed up to <path>.bak-dotfiles-<ts>.
-# Usage: setup.sh [--dry-run]
+# Usage: setup.sh [--dry-run | --check]
+#   --check: report drift between repo and live files, change nothing, exit 1 on any.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-dry=0
+dry=0 check=0 fail=0
 [ "${1:-}" = "--dry-run" ] && dry=1
+[ "${1:-}" = "--check" ] && check=1
 run() { if [ "$dry" = 1 ]; then echo "DRY: $*"; else "$@"; fi }
 
 # repo path -> live path. config/X lives at ~/.config/X; VS Code (macOS) reads its
@@ -17,7 +19,7 @@ run() { if [ "$dry" = 1 ]; then echo "DRY: $*"; else "$@"; fi }
 live() { case "$1" in vscode/*) echo "$HOME/Library/Application Support/Code/User/${1#vscode/}";; launchagents/*) echo "$HOME/Library/LaunchAgents/${1#launchagents/}";; *) echo "$HOME/.$1";; esac; }
 
 ts=$(date +%Y%m%d%H%M%S)
-git ls-files -z 'config/' 'vscode/' 'launchagents/' | while IFS= read -r -d '' rel; do
+while IFS= read -r -d '' rel; do   # process substitution, not a pipe: $fail must survive the loop
   case "$rel" in *.template) continue;; esac   # templates: manual, see README
   src="$PWD/$rel"
   dst=$(live "$rel")
@@ -26,6 +28,11 @@ git ls-files -z 'config/' 'vscode/' 'launchagents/' | while IFS= read -r -d '' r
     echo "ok (same):     $label"
     continue
   fi
+  if [ "$check" = 1 ]; then
+    if [ -e "$dst" ]; then echo "DRIFT:         $label   keep live: cp $label $rel"
+    else echo "MISSING:       $label   install: setup.sh"; fi
+    fail=$((fail + 1)); continue
+  fi
   if [ -e "$dst" ]; then
     run cp -a "$dst" "$dst.bak-dotfiles-$ts"
     echo "backed up:     $label -> $label.bak-dotfiles-$ts"
@@ -33,7 +40,12 @@ git ls-files -z 'config/' 'vscode/' 'launchagents/' | while IFS= read -r -d '' r
   run mkdir -p "$(dirname "$dst")"
   run cp "$src" "$dst"
   echo "installed:     $label"
-done
+done < <(git ls-files -z 'config/' 'vscode/' 'launchagents/')
+
+if [ "$check" = 1 ]; then
+  if [ "$fail" = 0 ]; then echo "VALID: live == repo"; exit 0; fi
+  echo "INVALID: $fail mismatches" >&2; exit 1
+fi
 
 # pr-watch poller under launchd (launchagents/com.tribble.pr-watch.plist).
 # bootout+bootstrap = idempotent (re)load, so an edited plist takes effect and
