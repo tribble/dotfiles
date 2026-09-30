@@ -33,3 +33,5 @@
 !vscode/keybindings.json
 !launchagents/
 !launchagents/com.tribble.pr-watch.plist
+!tests/
+!tests/pi-update.fish
