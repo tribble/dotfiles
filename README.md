@@ -54,6 +54,8 @@ afterwards. Read the diff, then commit.
 | `~/.config/fish/conf.d/ws.fish` | `config/fish/conf.d/ws.fish` | ws/herdr functions + live completions |
 | `~/.config/fish/conf.d/pr.fish` | `config/fish/conf.d/pr.fish` | `pr-review` + `pr-checkout` completion: PR numbers from pr-watch's cache, `pr-<n>` worktrees after `--clean`, flags (see `~/work/pi/pr-review/README.md`) |
 | `~/.config/fish/conf.d/fish_frozen_theme.fish` | `config/fish/conf.d/fish_frozen_theme.fish` | hand-picked theme colors (written by `fish_config`) |
+| `~/.config/fish/conf.d/path-local-bin.fish` | `config/fish/conf.d/path-local-bin.fish` | `~/.local/bin` ahead of mise's tool dirs on PATH (must sort after `mise-activate.fish`) |
+| `~/.local/bin/pi` | `local/bin/pi` | pi on the global Node 24, not the project's node pin (`mise exec node@24 npm:@earendil-works/pi-coding-agent`; pi's version stays pinned in mise config) |
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
 | `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24) |

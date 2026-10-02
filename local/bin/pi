@@ -1,0 +1,9 @@
+#!/bin/sh
+# pi on the global Node 24, not the current project's node pin (workos pins
+# 24.14.1; pi-subagents needs >= 24.21). npm CLIs run whatever `node` is first on
+# PATH and mise has no per-tool runtime setting, so this is the wrapper mise's
+# author recommends: github.com/jdx/mise/discussions/13477. Pi's version stays
+# pinned in ~/.config/mise/config.toml. Naming the npm tool makes mise put its
+# bin dir first, so the inner `pi` is the real one, not this script. Commands pi
+# runs (and child pi processes) inherit Node 24 on PATH.
+exec mise exec node@24 npm:@earendil-works/pi-coding-agent -- pi "$@"

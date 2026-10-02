@@ -15,7 +15,7 @@ run() { if [ "$dry" = 1 ]; then echo "DRY: $*"; else "$@"; fi }
 
 # repo path -> live path. config/X lives at ~/.config/X; VS Code (macOS) reads its
 # user files from ~/Library/Application Support/Code/User, not ~/.config;
-# launchd reads per-user jobs from ~/Library/LaunchAgents.
+# launchd reads per-user jobs from ~/Library/LaunchAgents; local/bin/X goes to ~/.local/bin/X.
 live() { case "$1" in vscode/*) echo "$HOME/Library/Application Support/Code/User/${1#vscode/}";; launchagents/*) echo "$HOME/Library/LaunchAgents/${1#launchagents/}";; *) echo "$HOME/.$1";; esac; }
 
 ts=$(date +%Y%m%d%H%M%S)
@@ -40,7 +40,7 @@ while IFS= read -r -d '' rel; do   # process substitution, not a pipe: $fail mus
   run mkdir -p "$(dirname "$dst")"
   run cp "$src" "$dst"
   echo "installed:     $label"
-done < <(git ls-files -z 'config/' 'vscode/' 'launchagents/')
+done < <(git ls-files -z 'config/' 'vscode/' 'launchagents/' 'local/')
 
 if [ "$check" = 1 ]; then
   if [ "$fail" = 0 ]; then echo "VALID: live == repo"; exit 0; fi
