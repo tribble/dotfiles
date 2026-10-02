@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# Runnable check for config/fish/conf.d/pi-update.fish.
+# Runnable check for local/bin/pi-update.
 #
 # Run:  fish tests/pi-update.fish
 #
@@ -12,7 +12,7 @@
 set -g ROOT (realpath (status filename)/../..)
 set -g TEST_TMP $ROOT/.artifacts/pi-update-test
 set -g STUB_BIN $TEST_TMP/bin
-set -g FUNCTION_FILE $ROOT/config/fish/conf.d/pi-update.fish
+set -g SCRIPT $ROOT/local/bin/pi-update
 set -g BASE_PATH (string join : $PATH)
 set -g REAL_MISE (command -v mise)
 set -g FAILED
@@ -94,7 +94,7 @@ function run_pi_update -a home
         XDG_STATE_HOME=$home/.local/state XDG_CACHE_HOME=$home/.cache \
         PATH="$STUB_BIN:$BASE_PATH" REAL_MISE=$REAL_MISE \
         STUB_LOG=$home/stub.log $argv[2..-1] \
-        fish --no-config -c "source $FUNCTION_FILE; pi-update"
+        fish --no-config $SCRIPT
 end
 
 # --- s1: update + pin-only local commit, unrelated work preserved ------

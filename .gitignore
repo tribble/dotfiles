@@ -18,7 +18,6 @@
 !config/fish/conf.d/pi.fish.template
 !config/fish/conf.d/pr.fish
 !config/fish/conf.d/ws.fish
-!config/fish/conf.d/pi-update.fish
 !config/fish/conf.d/mise-activate.fish
 !config/fish/conf.d/fish_frozen_theme.fish
 !config/git/
@@ -37,5 +36,6 @@
 !local/
 !local/bin/
 !local/bin/pi
+!local/bin/pi-update
 !tests/
 !tests/pi-update.fish
