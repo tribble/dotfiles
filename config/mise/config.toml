@@ -1,6 +1,6 @@
 [tools]
 node = "24"
-"npm:@earendil-works/pi-coding-agent" = "1.0.0"
+"npm:@earendil-works/pi-coding-agent" = "1.0.3"
 [settings]
 trusted_config_paths = [
     "~/conductor/workspaces"
