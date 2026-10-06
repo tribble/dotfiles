@@ -58,7 +58,7 @@ afterwards. Read the diff, then commit.
 | `~/.local/bin/pi` | `local/bin/pi` | pi on the global Node 24, not the project's node pin (`mise exec node@24 npm:@earendil-works/pi-coding-agent`; pi's version stays pinned in mise config) |
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
-| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24) |
+| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24); `[env] _.path` keeps `~/.local/bin` ahead of mise's tool dirs in every shell |
 | `~/Library/Application Support/Code/User/settings.json` | `vscode/settings.json` | VS Code user settings |
 | `~/Library/Application Support/Code/User/tasks.json` | `vscode/tasks.json` | user task `Send selection to PR agent` → `pr-note --here` (see `~/work/pi/pr-review/README.md`) |
 | `~/Library/Application Support/Code/User/keybindings.json` | `vscode/keybindings.json` | `ctrl+alt+n` runs that task on a selection |

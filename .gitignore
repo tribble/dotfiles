@@ -39,3 +39,4 @@
 !local/bin/pi-update
 !tests/
 !tests/pi-update.fish
+!tests/mise-path-precedence.fish
