@@ -3,6 +3,7 @@
 # allowlisted here.
 *
 !.gitignore
+!AGENTS.md
 !README.md
 !setup.sh
 !scripts/
