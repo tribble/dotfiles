@@ -38,11 +38,12 @@ if not MISE_TRUSTED_CONFIG_PATHS=$target mise config set --file $target 'tools.n
     exit 1
 end
 if git -C $repo diff --quiet -- $rel
-    echo "pi-update: dotfiles pin already at $v; nothing to commit"
+    echo "pi-update: pi $v is already installed and pinned in the dotfiles"
     exit 0
 end
 if git -C $repo commit --quiet --only -m "mise: pin pi $v" -- $rel
-    echo "pi-update: dotfiles pin updated to $v and committed locally (not pushed)"
+    echo "pi-update: pi $v installed; dotfiles pin committed locally"
+    echo "pi-update: publish it with: git -C $repo push"
 else
     echo "pi-update: pi $v installed, but committing the dotfiles pin failed; edit left uncommitted" >&2
     exit 1
