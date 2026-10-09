@@ -113,7 +113,8 @@ expect "s1 pin synced" (grep -c '"npm:@earendil-works/pi-coding-agent" = "9.9.9"
 expect "s1 other keys kept" (grep -c 'node = "24"' $repo/config/mise/config.toml) 1
 expect "s1 commit holds only the pin file" (git -C $repo diff-tree --no-commit-id --name-only -r HEAD) "config/mise/config.toml"
 expect_match "s1 commit message" "9.9.9" (git -C $repo log -1 --pretty=%s)
-expect_match "s1 says local, not pushed" "not pushed" "$out"
+expect_match "s1 says installed and committed locally" "installed; dotfiles pin committed locally" "$out"
+expect_match "s1 shows push command" "git -C $repo push" "$out"
 expect "s1 staged file kept staged" (git -C $repo status --porcelain -- staged.txt) "A  staged.txt"
 expect "s1 unstaged file kept dirty" (git -C $repo status --porcelain -- other.txt) " M other.txt"
 
@@ -124,7 +125,7 @@ set -l out (run_pi_update $h STUB_NPM_VERSION=9.9.9 2>&1)
 set -l st $status
 expect "s2 exit ok" $st 0
 expect "s2 no new commit" (git -C $repo rev-parse HEAD) $head1
-expect_match "s2 says nothing to commit" "nothing to commit" "$out"
+expect_match "s2 says already installed and pinned" "already installed and pinned" "$out"
 
 # --- s3: dirty target rejected before install ---------------------------
 
