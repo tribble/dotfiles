@@ -19,12 +19,8 @@ show_agent_labels_on_pane_borders = true
 
 status_indicators = "dots"
 [theme]
-name = "catppuccin"
+name = "gruvbox"
 auto_switch = false
-
-[theme.custom]
-# focused agent row: catppuccin surface1 instead of the near-invisible default (#1e1e2e on #181825)
-active_row_bg = "#45475a"
 
 [[keys.command]]
 key = "prefix+space"

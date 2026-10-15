@@ -8,6 +8,7 @@
 !setup.sh
 !scripts/
 !scripts/sync-back.sh
+!scripts/tide-gruvbox.fish
 !config/
 !config/cheat/
 !config/cheat/herdr.md

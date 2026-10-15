@@ -42,6 +42,9 @@ That copy is the review moment: the script touches only the hardcoded paths
 in its `paths=(...)` list (never a wildcard sweep) and prints `git diff --stat`
 afterwards. Read the diff, then commit.
 
+Tide stores colours as fish universal variables, not a file. Run
+`fish scripts/tide-gruvbox.fish` to apply the Tide gruvbox colours.
+
 ## What's managed
 
 | Live path | Repo path | Notes |
