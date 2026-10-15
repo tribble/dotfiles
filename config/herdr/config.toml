@@ -22,6 +22,11 @@ status_indicators = "dots"
 name = "gruvbox"
 auto_switch = false
 
+[theme.custom]
+# Gruvbox Dark Hard background, matching Ghostty
+panel_bg = "#1d2021"
+surface_dim = "#1d2021"
+
 [[keys.command]]
 key = "prefix+space"
 type = "plugin_action"
