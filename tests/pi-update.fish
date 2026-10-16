@@ -85,6 +85,9 @@ function mkhome -a name
     echo base >$repo/other.txt
     git -C $repo add config/mise/config.toml other.txt
     git -C $repo commit -qm init
+    git -c init.defaultBranch=main init --bare -q $h/remote.git
+    git -C $repo remote add origin $h/remote.git
+    git -C $repo push -qu origin main
     echo $h
 end
 
@@ -114,7 +117,8 @@ expect "s1 other keys kept" (grep -c 'node = "24"' $repo/config/mise/config.toml
 expect "s1 commit holds only the pin file" (git -C $repo diff-tree --no-commit-id --name-only -r HEAD) "config/mise/config.toml"
 expect_match "s1 commit message" "9.9.9" (git -C $repo log -1 --pretty=%s)
 expect_match "s1 says installed and committed locally" "installed; dotfiles pin committed locally" "$out"
-expect_match "s1 shows push command" "git -C $repo push" "$out"
+expect "s1 remote pin advanced" (git --git-dir=$h/remote.git show main:config/mise/config.toml | grep -c '"npm:@earendil-works/pi-coding-agent" = "9.9.9"') 1
+expect "s1 remote matches local commit" (git --git-dir=$h/remote.git rev-parse main) (git -C $repo rev-parse HEAD)
 expect "s1 staged file kept staged" (git -C $repo status --porcelain -- staged.txt) "A  staged.txt"
 expect "s1 unstaged file kept dirty" (git -C $repo status --porcelain -- other.txt) " M other.txt"
 
@@ -126,6 +130,30 @@ set -l st $status
 expect "s2 exit ok" $st 0
 expect "s2 no new commit" (git -C $repo rev-parse HEAD) $head1
 expect_match "s2 says already installed and pinned" "already installed and pinned" "$out"
+
+# --- publish rejection and same-version retry --------------------------
+
+printf '#!/bin/sh\nexit 1\n' >$h/remote.git/hooks/pre-receive
+chmod +x $h/remote.git/hooks/pre-receive
+set -l out (run_pi_update $h STUB_NPM_VERSION=9.9.10 2>&1)
+set -l st $status
+set -l pending (git -C $repo rev-parse HEAD)
+expect "push rejection exits nonzero" $st 1
+expect_match "push rejection explains installed state" "pi 9.9.10 installed and pinned locally, but pushing failed" "$out"
+expect_match "push rejection requires resolving Git error" "resolve the Git error above, then retry" "$out"
+expect_match "push rejection offers rerun" "retry with pi-update" "$out"
+expect_match "push rejection offers exact push" "git -C $repo push" "$out"
+expect "push rejection keeps remote unchanged" (git --git-dir=$h/remote.git rev-parse main) $head1
+expect "push rejection keeps new local commit" (git -C $repo rev-list --count $head1..HEAD) 1
+expect "push rejection keeps pin committed" (git -C $repo status --porcelain -- config/mise/config.toml) ""
+expect "push rejection keeps staged work" (git -C $repo status --porcelain -- staged.txt) "A  staged.txt"
+expect "push rejection keeps unstaged work" (git -C $repo status --porcelain -- other.txt) " M other.txt"
+rm $h/remote.git/hooks/pre-receive
+set -l out (run_pi_update $h STUB_NPM_VERSION=9.9.10 2>&1)
+set -l st $status
+expect "retry exits ok" $st 0
+expect "retry creates no new commit" (git -C $repo rev-parse HEAD) $pending
+expect "retry publishes pending commit" (git --git-dir=$h/remote.git rev-parse main) $pending
 
 # --- s3: dirty target rejected before install ---------------------------
 

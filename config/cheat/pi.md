@@ -91,8 +91,9 @@ flag — if its flags consistently miss your taste, disable it:
 ## Manage
 
 - `pi-update` — one command: pi to npm's latest (mise global pin), then writes that pin into
-  `~/work/dotfiles/config/mise/config.toml` and commits it locally (never pushes). Refuses to run
-  if that dotfiles pin has uncommitted changes. Running sessions keep the old version; new Pi
+  `~/work/dotfiles/config/mise/config.toml`, commits only that file, and pushes. Resolve the Git error before
+  rerunning to retry a failed push without another commit. Refuses to run if that dotfiles pin has uncommitted changes.
+  Running sessions keep the old version; new Pi
   processes get the new one.
 - `~/work/dotfiles/setup.sh --check` — live vs repo for every dotfile (fish, cheat, mise, herdr,
   vscode, launchagents); exit 1 on drift, each line carries the `cp` to keep the live edit.
