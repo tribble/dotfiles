@@ -98,11 +98,6 @@ flag — if its flags consistently miss your taste, disable it:
 - `~/work/dotfiles/setup.sh --check` — live vs repo for every dotfile (fish, cheat, mise, herdr,
   vscode, launchagents); exit 1 on drift, each line carries the `cp` to keep the live edit.
   `~/work/pawprint/scripts/validate.sh` is the same for `~/.pi`.
-- Cloudflare-routed Anthropic models fail with "credentials … expired/not found"? Cause is a
-  stale Anthropic SDK profile in `~/.config/anthropic/` (`ant auth status` shows it) — the SDK
-  auto-loads it because pi passes `apiKey: null` for header-auth gateways. Fix: `rm -r
-  ~/.config/anthropic` (Claude Code auth is separate, in keychain). Fallback if that dir
-  must stay: `~/work/pawprint/scripts/patch-pi-anthropic-gateway` (idempotent, redo after `pi update`)
 - `pi config` — enable/disable any extension, skill, prompt, theme (Tab = project-local)
 - `pi remove <source>` — uninstall a package
 - MCP auth: `/mcp-auth <server>` per service. Exception: `github` uses your gh CLI token
