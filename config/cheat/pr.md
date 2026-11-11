@@ -1,19 +1,18 @@
 # PR REVIEW
 ```
 pr-review                  what's waiting (Ctrl+click the URL)
-pr-review <n>              open it: VS Code (workos/infra) or the browser
+pr-review <n>              open it: VS Code for a repo in ws.json (workos, infra), else the browser
 pr-checkout --clean <n>    afterwards, for workos worktrees (~9 GB each)
 ```
 
-Own PR: `pr-review --nvim <n>` (the agent's `open_pr_review` opens it for you) · in VS Code: select, `ctrl+alt+n`, type the note.
-Keys in the nvim viewer: `?`.
+Own PR: `pr-review <n>` too. VS Code only for a repo in `ws.json`; others (pawprint included) open in the browser. For VS Code on an unmapped repo: `code <worktree>`. Leave a note for the agent that owns it: select the lines, `ctrl+alt+n`, type the note.
 ## pr-review
 | Command | Does |
 |---|---|
 | `pr-review --web <n>` | the browser, even when the repo is checked out |
-| `pr-review --nvim <n>` | own PR in octo.nvim, any repo (herdr tab; `\pc` sends a note) |
 | `pr-review --dry-run <n>` | print the decision + commands, run nothing |
 | `pr-review <TAB>` | PR numbers from the queue (also `pr-checkout`; `--clean <TAB>` = worktrees) |
+| `<n>` | a bare number (queue lookup), `owner/repo#n`, or the PR URL |
 ## pr-checkout
 | Command | Does |
 |---|---|
@@ -25,5 +24,11 @@ Keys in the nvim viewer: `?`.
 ## pr-note
 | Command | Does |
 |---|---|
-| `ctrl+alt+n` (VS Code) | the agent that opened the PR, else the one in that checkout; never a guess |
+| `ctrl+alt+n` (VS Code) | the agent tracking the PR (`pr-watch tracked`), else the one working in that checkout; never a guess |
 | `pr-note --here --dry-run …` | print that routing (`to`, `resolvedBy`), send nothing |
+## pr-watch
+| Command | Does |
+|---|---|
+| `pr-watch status` / `tracked` | the cache / which agent each PR steers |
+| `pr-watch track owner/repo#N --agent <intercom-id>` | agents register their own PRs; re-track only when the session UUID changes (a resumed session keeps its ID; a replacement session gets a new one) |
+| `launchctl kickstart -k gui/$(id -u)/com.tribble.pr-watch` | restart the poller |
