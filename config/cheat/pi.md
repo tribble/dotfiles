@@ -1,116 +1,67 @@
-# PI — pi-fitch-kit additions cheat sheet
+# PI cheat sheet
 
-Installed 2026-08-25 from `github.com/fitchmultz/pi-fitch-kit` (kit is filtered:
-no session-name / clean-footer / fast-mode / anthropic-image-guard; also skipped
-pi-verbosity-control and macuse). Drift check anytime: `/fitch-setup verify`.
+Config is pawprint (`~/work/pawprint`, applied to `~/.pi/agent`). Never edit `~/.pi` by hand: change the repo, then `setup.sh --apply`. Fitch's kit supplies the session-name and image-guard extensions plus a few packages below.
 
 ## Slash commands (you type these)
 
 | Command | Does |
 |---|---|
-| `/ctx` | context-window breakdown: what's actually eating tokens (pi-ctx-info) |
-| `/draft <text>` | rewrite rough text into a proper agent prompt — off-transcript; Accept / Copy / Tweak / Deny |
-| `/side-question <text>` | get an answer using full session context without polluting the transcript |
-| `/stash` / `/stash-list` | park a half-written draft message, restore later (pi-stash) |
-| `/edit-turn` | re-edit or remove an earlier user turn in place (pi-edit-session-in-place) |
+| `/ws`, `/delegate`, `/fleet`, `/release-worktree`, `/start-ticket` | agents and workstreams — see `cheat` (ws) |
+| `/costs [days]` · `/costs workstream [full]` | per-model medians · this session + everything it launched, counted once; spending is uncapped |
+| `/btw <question>` | ask a side model about this conversation; the card never enters the main context |
+| `/recap` | detached session summary, readable after resume (`/recap cancel` stops it) |
+| `/ctx` | context-window breakdown: what is eating tokens |
+| `/todos` | the persistent todo list (survives compaction and reload) |
+| `/stash` / `/stash-list` | park a half-written message, restore later |
+| `/edit-turn` (Ctrl+Shift+E) | re-edit or remove an earlier turn in place |
 | `/copy-message` / `/copy-user` | copy raw session text without terminal formatting |
-| `/todos` | view the persistent todo list (survives compaction) |
-| `/cwd` | show/change working dir safely mid-session (worktrees, monorepos) |
-| `/done` | finished for good: archive transcript to `~/.pi/agent/sessions-archive/` (gone from `/resume`, still greppable) and quit. Ctrl+D = leave resumable |
-| `/mcp` / `/mcp-auth` | MCP gateway: list/search connected services, authenticate one |
-| `/ponytail-review` | run ponytail's audit on demand (see "Ponytail watch" below) |
-| `/fitch-setup` / `… verify` | kit installer / read-only drift report |
+| `/cwd` | show/change working dir safely mid-session |
+| `/preset plan` / `/preset implement` | read-only planning on Sol/xhigh · implementation tools on high |
+| `/compact <what to keep>` · `/new` | trim within a topic · new topic = new session |
+| `/done` | finished for good: archive the transcript out of `/resume` (still greppable under `~/.pi/agent/sessions-archive/`) and quit. Ctrl+D leaves it resumable |
+| `/intercom` · `/handover` | peer overlay · hand this session over to another |
+| `/mcp` | MCP servers: sign in, reconnect, enable/disable. `github` needs no sign-in (uses your `gh` token) |
+| `/skill:<name>` | force a skill, e.g. `/skill:ponytail-review`, `/skill:shape` |
+| `/extract-process-improvements` | end of a substantial session: durable lessons into AGENTS.md |
 | `/github-open-issues-prs` | open issues+PRs across Fitch's repos (his, not yours) |
+| `/packages` · `/update` | pins vs upstream (read-only) · update pi + packages now |
+| `/reload` · `/trust` · `/name` · `/model` · `/thinking` | built-ins |
 
-## Agent-facing (no keys — the model uses them)
+## Agent-facing (the model uses them)
 
-- `apply_edits` — atomic exact-match edits, plan-first multi-file changes
-- `todo_list` — nested persistent tasks; survives long sessions + compaction
-- `change_dir` — safe mid-session cd into worktrees/subprojects
-- `calculator` — deterministic math instead of model estimation
-- tool-duration — model sees how long slow tool calls took (passive)
-- browser tools (pi-agent-browser-native) — real-browser QA, screenshots, authed flows
+- `launch_agent` / `release_worktree` — native pane agents with role profiles; only recorded pre-pane failure claims can be released
+- `intercom` — list/send/ask/reply/handover between sessions; IDs from `intercom status`
+- `agent_costs` — the `/costs` views for the model
+- `todo_list`, `change_dir`, `calculator`, file editing (`apply_patch`, `replace_text`, `write_files`), browser tools (pi-agent-browser-native)
 
-## Skills (auto-load on task match — no invocation needed)
+## Skills (auto-load on task match; `/skill:<name>` forces one)
 
 | Skill | Fires when |
 |---|---|
+| shape | before any build: settle intent, mock visual design, prove one slice |
 | verification-before-completion | about to claim done / commit / PR — forces fresh evidence first |
-| deslop | cleaning AI diff noise / ceremonial tests out of a change |
-| ux-review | reviewing user-visible flows (completion, recovery, truthfulness) |
-| thermo-nuclear-code-quality-review | big or structurally risky diffs |
-| tdd | test-first work is explicitly requested |
+| ask-clarifying-questions | ambiguity that materially changes scope or safety |
+| deslop | cleaning AI diff noise out of a change |
+| test-audit | writing or sweeping tests |
+| ux-review · thermo-nuclear-code-quality-review · code-smells | user-visible review · big structural diffs · smell inventory |
 | dogfood | exploratory QA via real browser/terminal |
-| diagram-creation | editable D2 diagrams with rendered previews |
-| ask-clarifying-questions | ambiguity that materially changes scope/safety |
+| diagram-creation | editable D2/SVG diagrams with rendered previews |
+| handoff | paste-ready continuation prompt for a new session |
 | pi-extension-development | building/debugging pi extensions |
 | propose-then-ship-pi | rank one repo improvement, stop, then ship it |
-| bro | (manual) plain-language rewrite, zero jargon |
-
-## Settings changed (2026-08-27 walkthrough)
-
-settings.json:
-- `steeringMode: "all"` — intercom steers inject after any tool call
-- `retry` 5 × 120s provider timeout — flaky-route resilience
-- `compaction` reserve 64k / keep-recent 40k (Fitch's profile: threshold = window − reserve)
-- `defaultThinkingLevel: "high"` (was medium)
-- `defaultProjectTrust: "ask"` + `subagents.projectTrust.childRuns: "inherit"` —
-  subagents follow saved trust.json decisions, never blanket-approve project resources
-- reviewer pin: gpt-5.6-sol @ **xhigh**; AGENTS.md gate = PR-ready, loop until
-  "no blocking findings" (+ reviewer-security for risky changes)
-- AGENTS.md has Fitch's `baseline` working-agreement block (managed markers)
-
-models.json (Fitch's 320k/64k/40k policy — compact at ~256k with ~60k runway):
-- `contextWindow: 320000` on claude-fable-5(-1), claude-opus-5, claude-sonnet-5,
-  gpt-5.6-sol, kimi-k3, glm-5p2, deepseek-v4-pro, minimax-m3
-- qwen3p7-max LEFT at 262144 (real window < 320k — overriding up would move the failure)
-- why: workos.com/blog/coding-agent-context-window-compaction-settings
-- backups: models.json.bak-20260827, mcp.json.bak-20260825
-
-mcp.json: added github (bearer via `!gh auth token` — GitHub MCP has no DCR),
-notion, linear, granola, cloudflare-docs/-ai-gateway/-observability, datadog.
-mcp-datadog extension retired to backup-mcp-datadog-20260825/.
-
-Agent Browser: npm CLI at 0.35.1 (kit manifest baseline 0.34.0 is stale — tell Fitch;
-his github catalog entry should also document the bearer pattern)
+| ponytail · ponytail-review · ponytail-audit | lazy-senior-dev mode (on by default) · change review · whole-repo audit |
+| pi-intercom | session-to-session coordination patterns |
 
 ## Ponytail watch (how to tell it's hurting)
 
-Ponytail injects persistent "reuse / delete / smallest root-cause fix" pressure.
-Watch your **reviewer findings** for these new patterns:
-
-- diffs deleting or "simplifying" code that wasn't in scope
-- contorted reuse of a near-fit helper instead of a clean small abstraction
-- workers under-delivering vs the task spec with "simplified" as the reason
-- reviewer loops that churn on minimalism instead of correctness
-
-If findings cluster there: `/ponytail-review` on the diff shows what it would
-flag — if its flags consistently miss your taste, disable it:
-`pi config` (toggle ponytail off) or remove the package. Zero state, fully reversible.
+Ponytail injects persistent "reuse / delete / smallest root-cause fix" pressure. Watch reviewer findings for: out-of-scope deletions, contorted reuse of a near-fit helper, workers under-delivering with "simplified" as the reason, review loops that churn on minimalism. If findings cluster there, `/skill:ponytail-review` on the diff shows what it flags; disable it with `pi config` (toggle ponytail off) or remove the package.
 
 ## Manage
 
-- `pi-update` — one command: pi to npm's latest (mise global pin), then writes that pin into
-  `~/work/dotfiles/config/mise/config.toml`, commits only that file, and pushes. Resolve the Git error before
-  rerunning to retry a failed push without another commit. Refuses to run if that dotfiles pin has uncommitted changes.
-  Running sessions keep the old version; new Pi
-  processes get the new one.
-- `~/work/dotfiles/setup.sh --check` — live vs repo for every dotfile (fish, cheat, mise, herdr,
-  vscode, launchagents); exit 1 on drift, each line carries the `cp` to keep the live edit.
-  `~/work/pawprint/scripts/validate.sh` is the same for `~/.pi`.
-- `pi config` — enable/disable any extension, skill, prompt, theme (Tab = project-local)
-- `pi remove <source>` — uninstall a package
-- MCP auth: `/mcp-auth <server>` per service. Exception: `github` uses your gh CLI token
-  automatically (`auth: bearer` + `!gh auth token` in mcp.json) — no /mcp-auth needed.
-  (GitHub's MCP server doesn't do OAuth dynamic client registration — bearer is the fix.)
-- macOS Keychain prompt storm on MCP calls? Two differently-signed `node` binaries. pi's
-  launcher is `#!/usr/bin/env node`, so a nix/flake node on PATH (direnv) gives pi a different
-  Keychain identity than the Apple-signed mise node that created the items → prompt per item.
-  Check: `lsof -p <pi pid> | grep bin/node`. Fix: one node source; direnv was removed 2026-09-10.
-
-## Parked
-
-- **Images in workflows** (revisit ~2026-09-01): whether to use vision more;
-  if yes, revisit `images.autoResize: false` + the excluded `anthropic-image-guard`
-  (needed together — guard protects Claude routes from oversized-image API errors)
-  and `terminal.imageWidthCells`. Parked 2026-08-27.
+- `pi-update` — pi to npm's latest (mise global pin), writes the pin into `~/work/dotfiles/config/mise/config.toml`, commits only that file, pushes. Refuses if that file has uncommitted changes. Running sessions keep the old version.
+- `~/work/dotfiles/setup.sh --check` — live vs repo for every dotfile; exit 1 on drift, each line carries the `cp` to keep the live edit. Plain `setup.sh` also restarts pr-watch. `~/work/pawprint/scripts/validate.sh` is the same for `~/.pi`.
+- Packages: `/packages` is read-only. `/packages bump|install|remove` only queues a pawprint source task — nothing changed yet. The applied `packages` list replaces the live one wholesale, so a live-only `pi install` is undone by the next apply.
+- `pi config` — enable/disable any extension, skill, prompt, theme (Tab = project-local).
+- MCP sign-in: `/mcp`. `github` uses your `gh auth token` automatically.
+- macOS Keychain prompt storm on MCP calls? Two differently-signed `node` binaries on PATH give pi two Keychain identities. Check `lsof -p <pi pid> | grep bin/node`; keep one node source.
+- A child whose transcript ends in `Request timed out.` is paused, not dead. Inspect its transcript, `herdr agent get <pane>` identity, and process/command state first. Prefer prompting that same settled session (UUID still bound) with its original brief; replace it only after the original actor and its commands have settled. A route probe (`pi --print --no-session --model <id> "Reply ok"`) proves connectivity only. Recipe: `~/.pi/agent/configs/managed-code-workflow.md` → Network interruption.
