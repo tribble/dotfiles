@@ -2,6 +2,9 @@
 node = "24"
 
 [settings]
+# Pi runs from ~/.local/share/pi-runtime (pi-update), not mise. Keeps old mise
+# Pi installs off shims and PATH without deleting them.
+disable_tools = ["npm:@earendil-works/pi-coding-agent"]
 trusted_config_paths = [
     "~/conductor/workspaces"
 ]

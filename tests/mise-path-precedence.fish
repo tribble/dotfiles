@@ -8,10 +8,13 @@
 # Installs the repo with the real setup.sh into a fake HOME under
 # .artifacts/mise-path-test/ (also checking the guarded config.fish Homebrew
 # migration), then starts real fish with its full config lifecycle in that HOME:
-# conf.d/brew.fish, Homebrew's vendor mise activation, config.fish. Installed
-# mise toolchains (MISE_DATA_DIR) and Homebrew's node are read-only inputs. The
-# fake Pi prints its runtime and the node its child processes get. The fixture
-# project pins a third installed node so every hook rebuilds mise's PATH
+# conf.d/brew.fish, Homebrew's vendor mise activation, config.fish. mise runs
+# with its default auto-install, so activation puts its shims dir on PATH, and
+# a legacy mise-installed Pi is present, as on a machine that used mise for Pi.
+# MISE_DATA_DIR is a fixture: APFS clones of two installed nodes plus that
+# legacy Pi, reshimmed like a live `mise reshim`. Homebrew's node is a read-only
+# input. The fake Pi prints its runtime and the node its child processes get.
+# The fixture project pins the second node so every hook rebuilds mise's PATH
 # section. No installs, no writes outside .artifacts.
 
 set -g ROOT (realpath (status filename)/../..)
@@ -99,11 +102,14 @@ printf '#!/bin/sh\necho util-ok\n' >$FHOME/.local/bin/hello-util
 chmod +x $FHOME/.local/bin/hello-util
 
 # The ceiling keeps mise from loading the real ~/.config/mise from an ancestor dir.
-set -g MISE_ENV MISE_DATA_DIR=$HOME/.local/share/mise MISE_TRUSTED_CONFIG_PATHS=$FIXTURE:$FHOME/.config/mise/config.toml MISE_CEILING_PATHS=$TEST_TMP \
-    MISE_NOT_FOUND_AUTO_INSTALL=false MISE_AUTO_INSTALL=false
-set -l home_node v(env HOME=$FHOME $MISE_ENV mise -C $FHOME current node)
+# Offline: nothing configured is missing, so auto-install must never download.
+set -l real_installs $HOME/.local/share/mise/installs
+set -l mise_data $TEST_TMP/mise-data
+set -g MISE_ENV MISE_DATA_DIR=$mise_data MISE_TRUSTED_CONFIG_PATHS=$FIXTURE:$FHOME/.config/mise/config.toml MISE_CEILING_PATHS=$TEST_TMP \
+    MISE_OFFLINE=true
+set -l home_node v(env HOME=$FHOME $MISE_ENV MISE_DATA_DIR=$HOME/.local/share/mise mise -C $FHOME current node)
 set -l fixture_node
-for v in (ls $HOME/.local/share/mise/installs/node | string match -r '^\d+\.\d+\.\d+$')
+for v in (ls $real_installs/node | string match -r '^\d+\.\d+\.\d+$')
     if test "v$v" != "$home_node" -a "v$v" != "$BREW_V"
         set fixture_node $v
         break
@@ -114,6 +120,17 @@ if not set -q fixture_node[1]
     exit 1
 end
 printf '[tools]\nnode = "%s"\n' $fixture_node >$FIXTURE/.mise.toml
+mkdir -p $mise_data/installs/node
+cp $real_installs/node/.mise.backend.toml $mise_data/installs/node/
+cp -cR $real_installs/node/(string sub -s 2 $home_node) $real_installs/node/$fixture_node $mise_data/installs/node/
+set -l legacy $mise_data/installs/npm-earendil-works-pi-coding-agent
+mkdir -p $legacy/1.5.2/node_modules/.bin
+printf '%s\n' 'short = "npm:@earendil-works/pi-coding-agent"' 'full = "npm:@earendil-works/pi-coding-agent"' >$legacy/.mise.backend.toml
+printf '#!/bin/sh\necho legacy-pi\n' >$legacy/1.5.2/node_modules/.bin/pi
+chmod +x $legacy/1.5.2/node_modules/.bin/pi
+set -l legacy_sum (find $legacy -type f | sort | xargs shasum | shasum)
+env -i HOME=$FHOME $MISE_ENV PATH=/usr/bin:/bin /bin/sh -c 'cd "$HOME" && exec /opt/homebrew/bin/mise reshim' >$TEST_TMP/reshim.out 2>&1
+expect "fixture mise reshim ran" $status 0
 set -l pi_want "pi:$BREW_EXEC|$BREW_V|child:v$fixture_node"
 
 # --- probes ---------------------------------------------------------------
@@ -135,6 +152,7 @@ printf '%s\n' \
     '    set -l m (contains -i -- (path dirname (command -s node)) $PATH)' \
     '    set -l l (contains -i -- $HOME/.local/bin $PATH)' \
     '    test $m -lt $l; and echo mise-before-local-bin' \
+    '    contains -- $MISE_DATA_DIR/shims $PATH; and echo shims-on-path' \
     '    pi "a b" \'$x\'' \
     '    sh -c "pi nested"' \
     '    printf "child-fish-node:%s\n" (fish -c "node -v")' \
@@ -193,6 +211,9 @@ expect "fish: Homebrew info dir on INFOPATH" (grep -c '^infopath:/opt/homebrew/s
 expect "fish: unrelated ~/.local/bin utility still runs" (grep -c '^util:util-ok$' $out) 1
 expect "fish: pi-update found from a clean PATH" (grep -c "^updater:$FHOME/.local/bin/pi-update\$" $out) 1
 expect "fish: project's mise tools stay ahead of ~/.local/bin" (grep -c '^mise-before-local-bin$' $out) 3
+expect "fish: mise's default activation put its shims dir on PATH" (grep -c '^shims-on-path$' $out) 3
+expect "legacy mise Pi never ran" (cat $TEST_TMP/fish.out $TEST_TMP/zsh.out | grep -c legacy-pi) 0
+expect "legacy mise Pi install byte-identical" (find $legacy -type f | sort | xargs shasum | shasum) "$legacy_sum"
 
 # Fresh, mise-less environment (launchd, herdr): Homebrew node, no child node.
 set -l out (env -i HOME=$FHOME PATH=/usr/bin:/bin $FHOME/.local/bin/pi fresh 2>&1)
