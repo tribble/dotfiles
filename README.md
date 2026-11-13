@@ -62,7 +62,7 @@ Tide stores colours as fish universal variables, not a file. Run
 | `~/.local/share/pi-runtime/version` | `local/share/pi-runtime/version` | Pi version pin; `pi-update` installs and moves it. After `setup.sh` on a new machine run `pi-update (cat ~/.local/share/pi-runtime/version)` |
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
-| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24) |
+| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24); disables mise's Pi tool so old mise Pi installs get no shim (run `mise reshim` after setup) |
 | `~/Library/Application Support/Code/User/settings.json` | `vscode/settings.json` | VS Code user settings |
 | `~/Library/Application Support/Code/User/tasks.json` | `vscode/tasks.json` | user task `Send selection to PR agent` → `pr-note --here` (see `~/work/pi/pr-review/README.md`) |
 | `~/Library/Application Support/Code/User/keybindings.json` | `vscode/keybindings.json` | `ctrl+alt+n` runs that task on a selection |
