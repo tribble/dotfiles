@@ -1,21 +1,33 @@
 #!/usr/bin/env fish
-# pi-update — update pi to the latest release.
-# This is a script (~/.local/bin/pi-update), not a conf.d function, so a
-# long-lived shell can never run a stale copy of it.
-# pi is a mise global tool (npm: backend, pinned in ~/.config/mise/config.toml)
-# so the same pi runs in every project dir regardless of the project's node pin.
-# `pi update` cannot move that pin; this can. Pins the exact version npm calls
-# latest: mise's own `@latest` hides releases younger than minimum_release_age
-# and can install one version while a stale `latest` symlink runs another.
-# Running sessions stay on the old version until restarted. `mise x` reports the
-# new version: this shell's PATH still holds the old install dir until the next prompt.
+# pi-update [version] — install Pi (default: npm's latest) for ~/.local/bin/pi
+# and pin it. A script, not a conf.d function, so a long-lived shell can never
+# run a stale copy of it. `pi update` updates pi's packages, not pi itself.
+# Installs with Homebrew's npm into ~/.local/share/pi-runtime/<version>: a temp
+# dir, installed with lifecycle scripts off, must pass `npm audit signatures`
+# before any package code runs, then run and report the version, then is renamed into
+# place. Only then does the pin (~/.local/share/pi-runtime/version)
+# move, so a failed update leaves the working install and pin untouched. Old
+# versions stay on disk: running sessions keep using them until restarted.
 # On success the pin is also written into the dotfiles source
-# (~/work/dotfiles/config/mise/config.toml), committed — only that file — and
-# pushed. Refuses to start when that file has uncommitted changes. Save or push
-# failure exits nonzero; resolve the Git error, then rerun to retry a push without another commit.
+# (~/work/dotfiles/local/share/pi-runtime/version), committed — only that file —
+# and pushed. Refuses to start when that file has uncommitted changes. Save or
+# push failure exits nonzero; resolve the Git error, then rerun to retry a push
+# without another commit.
 set -l repo ~/work/dotfiles
-set -l rel config/mise/config.toml
+set -l rel local/share/pi-runtime/version
 set -l target $repo/$rel
+set -l root ~/.local/share/pi-runtime
+set -l pkg @earendil-works/pi-coding-agent
+set -q HOMEBREW_PREFIX[1]; or set -l HOMEBREW_PREFIX /opt/homebrew
+set -l nodebin $HOMEBREW_PREFIX/opt/node/bin
+# Homebrew's npm starts with `#!/usr/bin/env node`: put its node first for npm only.
+set -l npm env PATH=$nodebin:(string join : $PATH) $nodebin/npm
+
+# The pi CLI in $argv[2] runs on node $argv[1], exits 0 and reports version $argv[3].
+function pi_reports -a node cli v
+    set -l out ($node $cli --version)
+    and test "$out" = $v
+end
 
 if not git -C $repo ls-files --error-unmatch -- $rel >/dev/null 2>&1
     echo "pi-update: $rel is not tracked in $repo; refusing to update" >&2
@@ -26,20 +38,49 @@ if test -n "$(git -C $repo status --porcelain -- $rel)"
     exit 1
 end
 
-set -l v (npm view @earendil-works/pi-coding-agent version)
-or exit
+set -l v $argv[1]
+if not set -q v[1]
+    set v ($npm view $pkg version)
+    or exit 1
+end
+if not string match -qr '^[0-9][0-9A-Za-z.+-]*$' -- "$v"
+    echo "pi-update: '$v' is not a version" >&2
+    exit 1
+end
 
-mise use -g npm:@earendil-works/pi-coding-agent@$v
-and mise x -- pi --version
-or exit
+set -l dir $root/$v
+if not test -e $dir
+    mkdir -p $root
+    or exit 1
+    set -l tmp (mktemp -d $root/.install-$v.XXXXXX)
+    or exit 1
+    if $npm install --prefix $tmp --ignore-scripts --save-exact --no-fund --no-audit $pkg@$v
+        and $npm audit signatures --prefix $tmp
+        and pi_reports $nodebin/node $tmp/node_modules/.bin/pi $v
+        and mv $tmp $dir
+    else
+        rm -rf $tmp
+        echo "pi-update: installing pi $v failed; the current pi is unchanged" >&2
+        exit 1
+    end
+end
+if not pi_reports $nodebin/node $dir/node_modules/.bin/pi $v
+    echo "pi-update: $dir does not run pi $v; remove it and rerun; the current pi is unchanged" >&2
+    exit 1
+end
+if not printf '%s\n' $v >$root/version.tmp; or not mv -f $root/version.tmp $root/version
+    echo "pi-update: pi $v installed, but pinning it in $root/version failed" >&2
+    exit 1
+end
+echo "pi $v"
 
-if not MISE_TRUSTED_CONFIG_PATHS=$target mise config set --file $target 'tools.npm:@earendil-works/pi-coding-agent' $v
+if not printf '%s\n' $v >$target
     echo "pi-update: pi $v installed, but writing the pin to $target failed" >&2
     exit 1
 end
 if git -C $repo diff --quiet -- $rel
     echo "pi-update: pi $v is already installed and pinned in the dotfiles"
-else if git -C $repo commit --quiet --only -m "mise: pin pi $v" -- $rel
+else if git -C $repo commit --quiet --only -m "pi: pin $v" -- $rel
     echo "pi-update: pi $v installed; dotfiles pin committed locally"
 else
     echo "pi-update: pi $v installed, but committing the dotfiles pin failed; edit left uncommitted" >&2
