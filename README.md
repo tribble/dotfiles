@@ -56,12 +56,13 @@ Tide stores colours as fish universal variables, not a file. Run
 | `~/.config/herdr/config.toml` | `config/herdr/config.toml` | herdr UI/toast/theme prefs |
 | `~/.config/fish/conf.d/ws.fish` | `config/fish/conf.d/ws.fish` | ws/herdr functions + live completions |
 | `~/.config/fish/conf.d/pr.fish` | `config/fish/conf.d/pr.fish` | `pr-review` + `pr-checkout` completion: PR numbers from pr-watch's cache, `pr-<n>` worktrees after `--clean`, flags (see `~/work/pi/pr-review/README.md`) |
+| `~/.config/fish/conf.d/brew.fish` | `config/fish/conf.d/brew.fish` | adds `~/.local/bin` to PATH, then Homebrew init (`brew shellenv`); sorts before mise's activation so mise's tools stay ahead of both, as in zsh |
 | `~/.config/fish/conf.d/fish_frozen_theme.fish` | `config/fish/conf.d/fish_frozen_theme.fish` | hand-picked theme colors (written by `fish_config`) |
-| `~/.config/fish/conf.d/mise-activate.fish` | `config/fish/conf.d/mise-activate.fish` | activates mise (replaces Homebrew's vendor snippet), then puts `~/.local/bin` ahead of mise's tool dirs |
-| `~/.local/bin/pi` | `local/bin/pi` | pi on the global Node 24, not the project's node pin (`mise exec node@24 npm:@earendil-works/pi-coding-agent`; pi's version stays pinned in mise config) |
+| `~/.local/bin/pi` | `local/bin/pi` | runs the pinned Pi from `~/.local/share/pi-runtime/<version>` on Homebrew's `node`, never the project's; commands pi runs keep the project toolchain |
+| `~/.local/share/pi-runtime/version` | `local/share/pi-runtime/version` | Pi version pin; `pi-update` installs and moves it. After `setup.sh` on a new machine run `pi-update (cat ~/.local/share/pi-runtime/version)` |
 | `~/.config/starship.toml` | `config/starship.toml` | prompt theme |
 | `~/.config/git/ignore` | `config/git/ignore` | global gitignore |
-| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24); `[env] _.path` keeps `~/.local/bin` ahead of mise's tool dirs in every shell |
+| `~/.config/mise/config.toml` | `config/mise/config.toml` | global toolchain pin (node 24) |
 | `~/Library/Application Support/Code/User/settings.json` | `vscode/settings.json` | VS Code user settings |
 | `~/Library/Application Support/Code/User/tasks.json` | `vscode/tasks.json` | user task `Send selection to PR agent` → `pr-note --here` (see `~/work/pi/pr-review/README.md`) |
 | `~/Library/Application Support/Code/User/keybindings.json` | `vscode/keybindings.json` | `ctrl+alt+n` runs that task on a selection |
@@ -72,7 +73,7 @@ Tide stores colours as fish universal variables, not a file. Run
 | Path | Why |
 |---|---|
 | `~/.config/fish/conf.d/pi.fish` | Contains Cloudflare account/gateway IDs — versioned as `pi.fish.template` instead; copy + fill in your own |
-| `~/.config/fish/config.fish` | Contains a live `BASETEN_API_KEY`. Rotate the key, strip it to env, then reconsider. |
+| `~/.config/fish/config.fish` | Contains a live `BASETEN_API_KEY`. Rotate the key, strip it to env, then reconsider. `setup.sh` removes only its old leading Homebrew init block (now `conf.d/brew.fish`), with a backup. |
 | `~/.config/mcp/mcp.json` | Contains internal hostnames (workos[.]tools / workos[.]cloud) |
 | `~/.config/fish/conf.d/git.fish`, `fish-ssh-agent.fish`, `~/.config/fish/functions/` | fisher/plugin-vendored; reinstall via fisher |
 | `~/.config/starship.toml.bak` | stale backup |

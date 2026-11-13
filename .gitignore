@@ -17,10 +17,10 @@
 !config/cheat/ws.md
 !config/fish/
 !config/fish/conf.d/
+!config/fish/conf.d/brew.fish
 !config/fish/conf.d/pi.fish.template
 !config/fish/conf.d/pr.fish
 !config/fish/conf.d/ws.fish
-!config/fish/conf.d/mise-activate.fish
 !config/fish/conf.d/fish_frozen_theme.fish
 !config/git/
 !config/git/ignore
@@ -39,6 +39,9 @@
 !local/bin/
 !local/bin/pi
 !local/bin/pi-update
+!local/share/
+!local/share/pi-runtime/
+!local/share/pi-runtime/version
 !tests/
 !tests/pi-update.fish
 !tests/mise-path-precedence.fish

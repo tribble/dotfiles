@@ -1,9 +1,5 @@
 [tools]
 node = "24"
-"npm:@earendil-works/pi-coding-agent" = "1.5.2"
-
-[env]
-_.path = ["~/.local/bin"]
 
 [settings]
 trusted_config_paths = [

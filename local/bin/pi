@@ -1,9 +1,22 @@
 #!/bin/sh
-# pi on the global Node 24, not the current project's node pin (workos pins
-# 24.14.1; pi-subagents needs >= 24.21). npm CLIs run whatever `node` is first on
-# PATH and mise has no per-tool runtime setting, so this is the wrapper mise's
-# author recommends: github.com/jdx/mise/discussions/13477. Pi's version stays
-# pinned in ~/.config/mise/config.toml. Naming the npm tool makes mise put its
-# bin dir first, so the inner `pi` is the real one, not this script. Commands pi
-# runs (and child pi processes) inherit Node 24 on PATH.
-exec mise exec node@24 npm:@earendil-works/pi-coding-agent -- pi "$@"
+# pi on Homebrew's Node, never the current project's. The absolute node path
+# skips PATH and mise, and PATH is passed through untouched, so commands pi runs
+# still get the project's toolchain. Homebrew updates Node; pi-update installs
+# Pi into ~/.local/share/pi-runtime/<version> and pins the version run here.
+root="$HOME/.local/share/pi-runtime"
+node="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/node/bin/node"
+v=
+read -r v 2>/dev/null <"$root/version"
+case "$v" in
+  [0-9]*) case "$v" in *[!0-9A-Za-z.+-]*) v= ;; esac ;;
+  *) v= ;;
+esac
+if [ -z "$v" ]; then
+  echo "pi: no valid version in $root/version; run: pi-update" >&2
+  exit 1
+fi
+if [ ! -e "$root/$v/node_modules/.bin/pi" ]; then
+  echo "pi: Pi $v is not installed; run: pi-update $v" >&2
+  exit 1
+fi
+exec "$node" "$root/$v/node_modules/.bin/pi" "$@"

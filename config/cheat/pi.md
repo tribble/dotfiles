@@ -58,7 +58,7 @@ Ponytail injects persistent "reuse / delete / smallest root-cause fix" pressure.
 
 ## Manage
 
-- `pi-update` — pi to npm's latest (mise global pin), writes the pin into `~/work/dotfiles/config/mise/config.toml`, commits only that file, pushes. Refuses if that file has uncommitted changes. Running sessions keep the old version.
+- `pi-update [version]` — installs Pi (default npm's latest) into `~/.local/share/pi-runtime/<version>`, pins it, writes the pin into `~/work/dotfiles/local/share/pi-runtime/version`, commits only that file, pushes. Refuses if that file has uncommitted changes. A failed install leaves the current pi untouched. Running sessions keep the old version. Pi runs on Homebrew's `node` (`brew upgrade node`), never the project's.
 - `~/work/dotfiles/setup.sh --check` — live vs repo for every dotfile; exit 1 on drift, each line carries the `cp` to keep the live edit. Plain `setup.sh` also restarts pr-watch. `~/work/pawprint/scripts/validate.sh` is the same for `~/.pi`.
 - Packages: `/packages` is read-only. `/packages bump|install|remove` only queues a pawprint source task — nothing changed yet. The applied `packages` list replaces the live one wholesale, so a live-only `pi install` is undone by the next apply.
 - `pi config` — enable/disable any extension, skill, prompt, theme (Tab = project-local).
